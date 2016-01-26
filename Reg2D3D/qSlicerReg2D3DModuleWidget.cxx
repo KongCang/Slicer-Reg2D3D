@@ -45,6 +45,8 @@
 #include "vtkSlicerReg2D3DLogic.h"
 
 #include "helloworld.h"
+#include "DrrRenderer.h"
+#include "Geometry.h"
 
 
 //-----------------------------------------------------------------------------
@@ -98,7 +100,7 @@ void qSlicerReg2D3DModuleWidget::onApply()
   Q_D(const qSlicerReg2D3DModuleWidget);
   vtkSlicerReg2D3DLogic *logic = vtkSlicerReg2D3DLogic::SafeDownCast(this->logic());
 
-
+  //Check if VolumeData is loaded and chosen
   if(!d->InputVolumeComboBox->currentNode() ||
        !d->InputXRayVolumeComboBox->currentNode())
     return;
@@ -109,25 +111,30 @@ void qSlicerReg2D3DModuleWidget::onApply()
   vtkMRMLVolumeNode *inputVolume = vtkMRMLVolumeNode::SafeDownCast(d->InputVolumeComboBox->currentNode());
   vtkMRMLVolumeNode *inputXRayVolume = vtkMRMLVolumeNode::SafeDownCast(d->InputXRayVolumeComboBox->currentNode());
 
-  //vtkMRMLVolumeDisplayNode;;
-  //vtkMRMLScalarVolumeDisplayNode
-  //vtkMRMLDiffusionTensorVolumeNode *dtvnode= vtkMRMLDiffusionTensorVolumeNode::SafeDownCast(inputVolume);
-  //vtkMRMLDiffusionWeightedVolumeNode *dwvnode= vtkMRMLDiffusionWeightedVolumeNode::SafeDownCast(inputVolume);
-  //vtkMRMLVectorVolumeNode *vvnode= vtkMRMLVectorVolumeNode::SafeDownCast(inputVolume);
   vtkMRMLScalarVolumeNode *inputnode = vtkMRMLScalarVolumeNode::SafeDownCast(inputVolume);
   vtkMRMLScalarVolumeNode *xraynode = vtkMRMLScalarVolumeNode::SafeDownCast(inputXRayVolume);
 
-  vtkNew<vtkImageData> imageDataWorkingCopy;
+ /* vtkNew<vtkImageData> imageDataWorkingCopy;
     imageDataWorkingCopy->DeepCopy(inputnode->GetImageData());
+*/
+  vtkNew<vtkImageData> resultImage;
+  resultImage->SetExtent(0,409,0,409,0,0);
+  unsigned short* dummy=resultImage->GetScalarPointer(0,0,0);
+  for (int i=0; i<410*410; i++){
+      *(dummy++)=0;
+  }
 
+  Geometry machine(1536.0f);    //focal width =1536mm
+  Geometry* pMachine = &machine;
+
+  //Later used for transformation
   vtkNew<vtkMatrix4x4> inputRASToIJK;
     inputnode->GetRASToIJKMatrix(inputRASToIJK.GetPointer());
 
   vtkNew<vtkMatrix4x4> inputIJKToRAS;
     inputnode->GetIJKToRASMatrix(inputIJKToRAS.GetPointer());
 
-
-
+  // Rescale VolumeData
   int iDims[3],xDims[3];
   inputnode->GetImageData()->GetDimensions(iDims);
   xraynode->GetImageData()->GetDimensions(xDims);
@@ -138,19 +145,6 @@ void qSlicerReg2D3DModuleWidget::onApply()
   id->GetScalarRange(iRange);
   xd->GetScalarRange(xRange);
 
-  std::cout << " max:" <<  iRange[1] << " min:" << iRange[0] << std::endl;
-  std::cout << " max:" <<  xRange[1] << " min:" << xRange[0] << std::endl;
-
-  /*if (id)
-  {
-      std::cout << " Type of Scalar " << id->GetScalarTypeAsString() << " max:" <<  iRange[1] << " min:" << iRange[0] << std::endl;
-
-  }
-
-  {
-      std::cout << " Type of Scalar " << id->GetScalarType() << " max:" <<  id->GetScalarTypeMax() << " min:" << id->GetScalarTypeMin() << std::endl;
-  }
-*/
   vtkSmartPointer<vtkImageShiftScale> xShiftScale =
       vtkSmartPointer<vtkImageShiftScale>::New();
 
@@ -164,10 +158,7 @@ void qSlicerReg2D3DModuleWidget::onApply()
 
   // vtkSmartPointer<vtkMRMLScalarVolumeNode> testNode = vtkSmartPointer<vtkMRMLScalarVolumeNode>::New();
 
- // vtkMRMLScene* ptestScene = this->mrmlScene();
-  //ptestScene->AddNode(testNode);
- // imageDataWorkingCopy->DeepCopy(xShiftScale->GetOutput());
- // cerr << "&id vor SetAndObserve: " << id << endl;
+
   inputnode->SetAndObserveImageData(xShiftScale->GetOutput());
   id=inputnode->GetImageData();
   cerr << "Rescale iRange\n";
@@ -186,14 +177,7 @@ void qSlicerReg2D3DModuleWidget::onApply()
   cerr << "Rescale xRange\n";
 }
 
-
-  // vtkSmartPointer<vtkPointData> pd=inputnode->GetImageData()->GetPointData();
-  // vtkSmartPointer<vtkPointData> id=inputnode->GetImageData()->GetPointData();
-
-  // std::cout << "Test\n";
-
   int iPoint[3],xPoint[3];
-  //std::cout << inputnode->GetImageData()->ComputePointId(punkti);
 
   unsigned int start = clock();
 
@@ -207,134 +191,14 @@ void qSlicerReg2D3DModuleWidget::onApply()
   cerr << "MeritFunction Value=" << MValue << endl << "Yeah" << endl;
 
 
-  /*int* dimens = id->GetDimensions();
-  for (int z = 0; z < dimens[2]; z++)
-      {
-      for (int y = 0; y < dimens[1]; y++)
-        {
-        for (int x = 0; x < dimens[0]; x++)
-          {
-          pixel = static_cast<unsigned short int*>(id->GetScalarPointer(x,y,z));
-          if (pixel[0]!=refpixel[x+y*dimens[0]+z*dimens[0]*dimens[1]])
-                  cout << "Fehler bei (" << x <<"," << y << "," << z <<")" << endl;
-           }
-        }
-      }
-  std::cout << "Time taken in millisecs: " << clock()-start << std::endl;
-  std:cout << "\n\n\n";
 
-*/
- /* start  = clock();
-
-  dimens = id->GetDimensions();
-  unsigned short int* pixel = static_cast<unsigned short int*>(id->GetScalarPointer(0,0,0));
-
-  for (int z = 0; z < dimens[2]; z++)
-      {
-      for (int y = 0; y < dimens[1]; y++)
-        {
-        for (int x = 0; x < dimens[0]; x++)
-          {
-          pixel[x+y*dimens[0]+z*dimens[0]*dimens[1]] = 65535-pixel[x+y*dimens[0]+z*dimens[0]*dimens[1]];
-          }
-        }
-      }
-  std::cout << "Part 2: Time taken in millisecs: " << clock()-start << std::endl;
-
-  start  = clock();
-
-  dimens = id->GetDimensions();
-  pixel = static_cast<unsigned short int*>(id->GetScalarPointer(0,0,0));
-
-  int dummy=dimens[0]*dimens[1]*dimens[2];
-
-  for (int z = 0; z < dummy; z++)
-      {
-          pixel[z] = 65535-pixel[z];
-      }
-  std::cout << "Part 3: Time taken in millisecs: " << clock()-start;
-
-*/
-  /*iPixel = static_cast<unsigned short int*>(id->GetScalarPointer(150,150,150));
-  std::cerr << pixel << " : " << pixel[0] << " : " << &(pixel[1]) << std::endl;
-  iPixel = static_cast<unsigned short int*>(id->GetScalarPointer(151,150,150));
-  std::cerr << pixel << " : " << pixel[0] << " : " << &(pixel[dimens[0]]) << std::endl;
-  iPixel = static_cast<unsigned short int*>(id->GetScalarPointer(151,151,150));
-  std::cerr << pixel << " : " << pixel[0] << " : " << &(pixel[dimens[1]*dimens[0]]) << std::endl;
-  iPixel = static_cast<unsigned short int*>(id->GetScalarPointer(151,151,151));
-  std::cerr << pixel << " : " << pixel[0] << std::endl;
-*/
+  DrrRenderer drrRenderer(inputnode, resultimage, pMachine);
+  drrRenderer.computeDrr(resultImage);
 
 
 
-  // Test: recenter
- /* int extent[6];
-  double spacing[3];
-  double origin[3];
 
-  inputnode->GetSpacing(spacing);
-  inputnode->GetOrigin(origin);
-  inputnode->GetImageData()->GetExtent(extent);
-
-  double center[3];
-  center[0] = origin[0] + spacing[0] * 0.5 * (extent[0] + extent[1]);
-  center[1] = origin[1] + spacing[1] * 0.5 * (extent[2] + extent[3]);
-  center[2] = origin[2] + spacing[2] * 0.5 * (extent[4] + extent[5]);
-
-  for (int i=0;i<3;i++){
-  std::cerr << center[i] << " o: " << origin[i] << " sp: " << spacing[i] << " ext: " << extent[0+2*i] << "," << extent[1+2*i] << std::endl;
-  }
-
-
-  {
-      std::cout << " Type of Scalar " << imageDataWorkingCopy->GetScalarType() << " max:" <<  imageDataWorkingCopy->GetScalarTypeMax() << " min:" << imageDataWorkingCopy->GetScalarTypeMin() << std::endl;
-
-  }
-  if (pd)
-  {
-    std::cout << " contains point data with " << pd->GetNumberOfArrays() << " arrays." << std::endl;
-    for (int i = 0; i < pd->GetNumberOfArrays(); i++)
-    {
-      std::cout << "\tArray " << i << " is named " << (pd->GetArrayName(i) ? pd->GetArrayName(i) : "NULL") << std::endl;
-    }
-  }
-
-  std::cerr << "Dimensions: " << dims[0] << "," << dims[1] << "," << dims[2] << std::endl;
-  std::cerr << "Memory size: " << inputnode->GetImageData()->GetActualMemorySize() << std::endl;
-  std::cerr << "Data object type: " << inputnode->GetImageData()->GetDataObjectType() << std::endl;
-
-
-  std::cerr << "ComputeButton pressed" << inputnode->GetID() << std::endl;
-  std::cerr << "ComputeButton pressed" << xraynode->GetID() << std::endl;
-
-*/
-  /* Sample to access points fastly
-   * //-----------------------------------------------------------------------------
-     //N.B.  The image data object must be correctly set up and scalars
-allocated
-     //before calling this method. That is: Allocate the object, set the
-dimensions,
-     //set the scalar type, and set the number of components.
-     template< typename T >
-     void
-     fillImageData( vtkSmartPointer< vtkImageData > pImageData, const T&
-val )
-     {
-         int dims[ 3 ];
-         pImageData->GetDimensions ( dims );
-         const int numComponents =
-pImageData->GetNumberOfScalarComponents ();
-         const int numElements = dims[ 0 ] * dims[ 1 ] * dims[ 2 ] *
-numComponents;
-         T* pPixel = static_cast< T* >( pImageData->GetScalarPointer () );
-         for( int elemCnt = 0; elemCnt < numElements; ++elemCnt )
-         {
-             pPixel[ elemCnt ] = val;
-         }
-     }
-*/
-
-    const int N = 16;
+/*    const int N = 16;
 
     char a[N] = "Hello \0\0\0\0\0\0";
     int b[N] = {15, 10, 6, 0, -11, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -344,7 +208,7 @@ numComponents;
     cuda_hello(a, b, N);
 
     cout <<  a << endl;
-
+*/
 }
 
 void qSlicerReg2D3DModuleWidget::onInputVolumeChanged()
@@ -361,13 +225,7 @@ void qSlicerReg2D3DModuleWidget::setMRMLScene(vtkMRMLScene* scene)
     return;
     }
 
-  //this->initializeParameterNode(scene);
 
-  //this->updateWidget();
-
-  // observe close event
-  //qvtkReconnect(this->mrmlScene(), vtkMRMLScene::EndCloseEvent,
-  //  this, SLOT(onEndCloseEvent()));
 }
 
 //-----------------------------------------------------------------------------

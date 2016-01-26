@@ -35,8 +35,10 @@ set(MODULE_SRCS
   qSlicer${MODULE_NAME}ModuleWidget.h
   DrrRendererRayCastingGpuCUDA.cuh
   DrrRendererRayCastingGpuCUDA_kernel.cu
-  DrrRendererRayCastingGpuCUDAThreadWorker.cxx
-  DrrRendererRayCastingGpuCUDAThreadWorker.h
+  Geometry.cxx
+  Geometry.h
+  DrrRenderer.cxx
+  DrrRenderer.h
   Matrices.cxx
   Matrices.h
   helloworld.cu
