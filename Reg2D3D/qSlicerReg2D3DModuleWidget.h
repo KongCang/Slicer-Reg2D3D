@@ -56,6 +56,7 @@ protected slots:
   void onInputVolumeChanged();
   void onApply();
   void updateWidget();
+  void onRender();
 
 //  void initializeParameterNode(vtkMRMLScene*);
 

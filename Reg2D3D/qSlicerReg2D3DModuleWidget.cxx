@@ -91,7 +91,8 @@ void qSlicerReg2D3DModuleWidget::setup()
             this, SLOT(onInputVolumeChanged()));
   connect(d->ComputeButton, SIGNAL(clicked()),
             this, SLOT(onApply()) );
-
+  connect(d->btnRenderImage, SIGNAL(clicked()),
+            this, SLOT(onRender()) );
 
 }
 
@@ -99,7 +100,7 @@ void qSlicerReg2D3DModuleWidget::onApply()
 {
   Q_D(const qSlicerReg2D3DModuleWidget);
   vtkSlicerReg2D3DLogic *logic = vtkSlicerReg2D3DLogic::SafeDownCast(this->logic());
-
+  //float intensityDivider;
   //Check if VolumeData is loaded and chosen
   if(!d->InputVolumeComboBox->currentNode() ||
        !d->InputXRayVolumeComboBox->currentNode())
@@ -108,24 +109,39 @@ void qSlicerReg2D3DModuleWidget::onApply()
   this->parametersNode->SetInputVolumeNodeID(d->InputVolumeComboBox->currentNode()->GetID());
   this->parametersNode->SetInputXRayVolumeNodeID(d->InputXRayVolumeComboBox->currentNode()->GetID());
 */
+
   vtkMRMLVolumeNode *inputVolume = vtkMRMLVolumeNode::SafeDownCast(d->InputVolumeComboBox->currentNode());
   vtkMRMLVolumeNode *inputXRayVolume = vtkMRMLVolumeNode::SafeDownCast(d->InputXRayVolumeComboBox->currentNode());
 
   vtkMRMLScalarVolumeNode *inputnode = vtkMRMLScalarVolumeNode::SafeDownCast(inputVolume);
   vtkMRMLScalarVolumeNode *xraynode = vtkMRMLScalarVolumeNode::SafeDownCast(inputXRayVolume);
 
+  int intensityDivider=d->hsIntensityDivider->value();
  /* vtkNew<vtkImageData> imageDataWorkingCopy;
     imageDataWorkingCopy->DeepCopy(inputnode->GetImageData());
 */
-  vtkNew<vtkImageData> resultImage;
+
+  //Prepare the resulting Image
+  //vtkImageData resImage;
+  vtkSmartPointer<vtkImageData> resultImage = vtkImageData::New();
+  //resultImage = &resImage;
+  //vtkSmartPointer<vtkImageData> pResultImage=&resultImage;
   resultImage->SetExtent(0,409,0,409,0,0);
-  unsigned short* dummy=resultImage->GetScalarPointer(0,0,0);
+  resultImage->SetSpacing(1,1,1);
+  resultImage->SetOrigin(0, 0, 0);
+  //resultImage->SetNumberOfScalarComponents(3);
+  //resultImage->SetScalarType(VTK_UNSIGNED_SHORT);
+  resultImage->AllocateScalars(VTK_UNSIGNED_SHORT,3);
+  cerr << "resultImageExtentSet" << endl;
+  unsigned short int* dummy=static_cast<unsigned short*>(resultImage->GetScalarPointer(0,0,0));
+  cerr << "resultImagePointer" << endl;
   for (int i=0; i<410*410; i++){
       *(dummy++)=0;
   }
-
-  Geometry machine(1536.0f);    //focal width =1536mm
+  cerr << "resultImageInitialized" << endl;
+  Geometry machine(1536.0f,intensityDivider);    //focal width =1536mm
   Geometry* pMachine = &machine;
+  cout << intensityDivider;
 
   //Later used for transformation
   vtkNew<vtkMatrix4x4> inputRASToIJK;
@@ -140,6 +156,11 @@ void qSlicerReg2D3DModuleWidget::onApply()
   xraynode->GetImageData()->GetDimensions(xDims);
   vtkSmartPointer<vtkImageData> id=inputnode->GetImageData();
   vtkSmartPointer<vtkImageData> xd=xraynode->GetImageData();
+int testdims[3];
+  id->GetDimensions(testdims);
+
+  cerr << "Input Extents:" << testdims[0] << ", " << testdims[1] << ", "<< testdims[2] << endl;
+
 
   double iRange[2],xRange[2];
   id->GetScalarRange(iRange);
@@ -161,6 +182,11 @@ void qSlicerReg2D3DModuleWidget::onApply()
 
   inputnode->SetAndObserveImageData(xShiftScale->GetOutput());
   id=inputnode->GetImageData();
+
+  id->GetDimensions(testdims);
+
+  cerr << "After rescale: " << testdims[0] << ", " << testdims[1] << ", "<< testdims[2] << endl;
+
   cerr << "Rescale iRange\n";
   }
   //cerr << "&id nach SetAndObserve: " << id << endl;
@@ -192,9 +218,10 @@ void qSlicerReg2D3DModuleWidget::onApply()
 
 
 
-  DrrRenderer drrRenderer(inputnode, resultimage, pMachine);
+  DrrRenderer drrRenderer(inputnode, pMachine);
   drrRenderer.computeDrr(resultImage);
-
+  dummy=static_cast<unsigned short*>(resultImage->GetScalarPointer(0,0,0));
+   logic->writepgmimagefile(dummy, 410, 410, "Drr.pgm");
 
 
 
@@ -210,6 +237,8 @@ void qSlicerReg2D3DModuleWidget::onApply()
     cout <<  a << endl;
 */
 }
+
+void qSlicerReg2D3DModuleWidget::onRender(){onApply();}
 
 void qSlicerReg2D3DModuleWidget::onInputVolumeChanged()
 {

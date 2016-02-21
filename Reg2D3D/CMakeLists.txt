@@ -48,7 +48,7 @@ set(MODULE_SRCS
 set(MODULE_MOC_SRCS
   qSlicer${MODULE_NAME}Module.h
   qSlicer${MODULE_NAME}ModuleWidget.h
-  DrrRendererRayCastingGpuCUDAThreadWorker.h
+#  DrrRendererRayCastingGpuCUDAThreadWorker.h
   )
 
 set(MODULE_UI_SRCS

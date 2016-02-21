@@ -7,19 +7,28 @@
     <x>0</x>
     <y>0</y>
     <width>525</width>
-    <height>319</height>
+    <height>340</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Reg2D3D</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item>
-    <widget class="ctkCollapsibleButton" name="ParametersCollapsibleButton">
-     <property name="text">
+    <widget class="ctkCollapsibleButton" name="ParametersCollapsibleButton" native="true">
+     <property name="text" stdset="0">
       <string>Parameters</string>
      </property>
      <layout class="QFormLayout" name="parametersFormLayout">
@@ -43,16 +52,16 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="qMRMLNodeComboBox" name="InputVolumeComboBox">
-        <property name="nodeTypes">
+       <widget class="qMRMLNodeComboBox" name="InputVolumeComboBox" native="true">
+        <property name="nodeTypes" stdset="0">
          <stringlist>
           <string>vtkMRMLScalarVolumeNode</string>
          </stringlist>
         </property>
-        <property name="addEnabled">
+        <property name="addEnabled" stdset="0">
          <bool>false</bool>
         </property>
-        <property name="renameEnabled">
+        <property name="renameEnabled" stdset="0">
          <bool>true</bool>
         </property>
        </widget>
@@ -65,16 +74,16 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="qMRMLNodeComboBox" name="InputXRayVolumeComboBox">
-        <property name="nodeTypes">
+       <widget class="qMRMLNodeComboBox" name="InputXRayVolumeComboBox" native="true">
+        <property name="nodeTypes" stdset="0">
          <stringlist>
           <string>vtkMRMLScalarVolumeNode</string>
          </stringlist>
         </property>
-        <property name="editEnabled">
+        <property name="editEnabled" stdset="0">
          <bool>true</bool>
         </property>
-        <property name="renameEnabled">
+        <property name="renameEnabled" stdset="0">
          <bool>true</bool>
         </property>
        </widget>
@@ -96,6 +105,112 @@
     <widget class="QPushButton" name="ComputeButton">
      <property name="text">
       <string>Compute Merit</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <property name="leftMargin">
+      <number>20</number>
+     </property>
+     <property name="topMargin">
+      <number>10</number>
+     </property>
+     <property name="rightMargin">
+      <number>20</number>
+     </property>
+     <property name="bottomMargin">
+      <number>10</number>
+     </property>
+     <item row="2" column="0" colspan="3">
+      <widget class="QSlider" name="hsIntensityDivider">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>200</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0" colspan="3">
+      <widget class="QSlider" name="hsOther">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <spacer name="horizontalSpacer1">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblIntensityDivider">
+       <property name="text">
+        <string>Intensity Divider</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="lblOther">
+       <property name="text">
+        <string>Other Parameter</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2">
+      <spacer name="horizontalSpacer2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="editOther"/>
+     </item>
+     <item row="3" column="0">
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="spinBoxIntensityDivider">
+       <property name="maximum">
+        <number>200</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btnRenderImage">
+     <property name="text">
+      <string>Render Image</string>
      </property>
     </widget>
    </item>
@@ -165,6 +280,38 @@
     <hint type="destinationlabel">
      <x>157</x>
      <y>75</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>hsIntensityDivider</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>spinBoxIntensityDivider</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>262</x>
+     <y>202</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>231</x>
+     <y>168</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBoxIntensityDivider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>hsIntensityDivider</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>231</x>
+     <y>168</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>262</x>
+     <y>202</y>
     </hint>
    </hints>
   </connection>

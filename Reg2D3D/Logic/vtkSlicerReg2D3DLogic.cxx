@@ -140,7 +140,7 @@ double vtkSlicerReg2D3DLogic::CalculateMeritFctMutualInformation(imageType *imag
             // get pixel values from base and match images
             bPixVal = imageBRawPtr[mRankCorrRandomArray[idx][1] + mRankCorrRandomArray[idx][0]*imageBWidth];
             mPixVal = imageMRawPtr[mRankCorrRandomArray[idx][1] + (mRankCorrRandomArray[idx][0])*imageMWidth];
-            cerr << "Hier sollte es nicht sein \n ";
+            //cerr << "Hier sollte es nicht sein \n ";
 
             // datatype nbins are used -> assign the appropriate bin
             bBin    = (int)((float)bPixVal*((float)nbin/(float)imageBDepth));
@@ -183,7 +183,7 @@ double vtkSlicerReg2D3DLogic::CalculateMeritFctMutualInformation(imageType *imag
             }
         }
 
-        cerr << "n: " << n << endl;
+        //cerr << "n: " << n << endl;
         for (int i = 0; i < nbin; i++) {
             for (int j = 0; j < nbin; j++) {
  //               cerr << jointproba[i+nbin*j];
@@ -211,7 +211,7 @@ double vtkSlicerReg2D3DLogic::CalculateMeritFctMutualInformation(imageType *imag
         if(*ptr>0.0)
         {
             hb  -= ((*ptr)*log(*ptr));
-            cerr << *ptr << ",\n"  << endl;
+           // cerr << *ptr << ",\n"  << endl;
         }
         ptr++;
     }
@@ -244,7 +244,7 @@ double vtkSlicerReg2D3DLogic::CalculateMeritFctMutualInformation(imageType *imag
         }
     }
 
-    cerr << "hm: " << hm << "   hb: " << hb << " hmb: " << hmb << endl;
+   // cerr << "hm: " << hm << "   hb: " << hb << " hmb: " << hmb << endl;
 
     zRes = 1000 * (-1.0+((2.0*hmb)/(hm+hb)));
 

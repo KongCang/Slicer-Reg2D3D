@@ -178,6 +178,9 @@ d_renderUS(unsigned short *d_output, uint imageSize, float focal_width, float im
         unisum = tex1D(transferTexCam2, unisum) * 65535;
 
     // write to the output buffer
+    // Test pattern.
+    //d_output[y*imageSize + x] = ushort( ((x/(float)imageSize)/2 + (y/(float)imageSize)/2 )*65535);
+
     d_output[y*imageSize + x] = ushort(unisum);
 
 }
