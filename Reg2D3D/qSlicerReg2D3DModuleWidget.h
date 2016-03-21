@@ -20,13 +20,13 @@
 
 // SlicerQt includes
 #include "qSlicerAbstractModuleWidget.h"
-
 #include "qSlicerReg2D3DModuleExport.h"
+
 #include <vtkMRMLNode.h>
 
 class qSlicerReg2D3DModuleWidgetPrivate;
 class vtkMRMLNode;
-//class vtkMRMLReg2D3DParametersNode;
+class vtkMRMLReg2D3DParametersNode;
 
 
 /// \ingroup Slicer_QtModules_ExtensionTemplate
@@ -40,10 +40,9 @@ public:
   typedef qSlicerAbstractModuleWidget Superclass;
   qSlicerReg2D3DModuleWidget(QWidget *parent=0);
   virtual ~qSlicerReg2D3DModuleWidget();
-  bool checkForVolumeParentTransform() const;
+//  bool checkForVolumeParentTransform() const;
 
 public slots:
-
 
 protected:
   QScopedPointer<qSlicerReg2D3DModuleWidgetPrivate> d_ptr;
@@ -51,21 +50,25 @@ protected:
   virtual void setup();
   virtual void setMRMLScene(vtkMRMLScene*);
 
-protected slots:
-//  void initializeNode(vtkMRMLNode*);
-  void onInputVolumeChanged();
-  void onApply();
-  void updateWidget();
-  void onRender();
+  void initializeParameterNode(vtkMRMLScene*);
 
-//  void initializeParameterNode(vtkMRMLScene*);
+protected slots:
+  void initializeNode(vtkMRMLNode*);
+  void initializeOutputVolume();
+  void onInputVolumeChanged();
+  void onCalculateMerit();
+  void onRenderDRR();
+  void onUpdateParameters();
+  void updateWidget();
+  void onEndCloseEvent();
+
 
 
 private:
   Q_DECLARE_PRIVATE(qSlicerReg2D3DModuleWidget);
   Q_DISABLE_COPY(qSlicerReg2D3DModuleWidget);
 
-//  vtkMRMLReg2D3DParametersNode *parametersNode;
+  vtkMRMLReg2D3DParametersNode *parametersNode;
 };
 
 #endif

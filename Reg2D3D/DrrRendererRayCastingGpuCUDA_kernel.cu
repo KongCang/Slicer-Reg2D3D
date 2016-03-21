@@ -551,7 +551,7 @@ void drrRendererRayCastingCuda_prepareMask2(unsigned int xSize, unsigned int ySi
     #endif
 }
 
-void drrRendererRayCastingCuda_computeMatrix(float *invModelViewMatrix, float focalWith)
+void drrRendererRayCastingCuda_computeMatrix(float *invModelViewMatrix, float focalWidth)
 {
     #if DEBUG
         printf("drrRendererRayCastingCuda_computeMatrix() called...\n");

@@ -21,10 +21,11 @@ public:
     ~DrrRenderer();
     void computeDrr(vtkImageData*);
     int iDivUp(int a, int b){return (a % b != 0) ? (a / b + 1) : (a / b);}   // IntegerDivision rounding up
-
+    void ShiftScale();
 
 
 private:
+    vtkMRMLScalarVolumeNode* mNode; // Point to SlicerNode
     vtkImageData* mVolumeData;      // Contains the Volume Data
     unsigned short imageSize;       // side length of computed image (square)
     Geometry* mMachine;             // Contains the geometry data

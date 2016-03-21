@@ -130,13 +130,28 @@
        <property name="maximum">
         <number>200</number>
        </property>
+       <property name="value">
+        <number>100</number>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
      <item row="5" column="0" colspan="3">
-      <widget class="QSlider" name="hsOther">
+      <widget class="QSlider" name="hsFocalWidth">
+       <property name="minimum">
+        <number>-2000</number>
+       </property>
+       <property name="maximum">
+        <number>2000</number>
+       </property>
+       <property name="pageStep">
+        <number>100</number>
+       </property>
+       <property name="value">
+        <number>1536</number>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -165,7 +180,7 @@
      <item row="4" column="0">
       <widget class="QLabel" name="lblOther">
        <property name="text">
-        <string>Other Parameter</string>
+        <string>Focal Width</string>
        </property>
       </widget>
      </item>
@@ -181,9 +196,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLineEdit" name="editOther"/>
      </item>
      <item row="3" column="0">
       <spacer name="verticalSpacer_2">
@@ -202,6 +214,22 @@
       <widget class="QSpinBox" name="spinBoxIntensityDivider">
        <property name="maximum">
         <number>200</number>
+       </property>
+       <property name="singleStep">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>100</number>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QSpinBox" name="spinBoxFocalWidth">
+       <property name="minimum">
+        <number>-2000</number>
+       </property>
+       <property name="maximum">
+        <number>2000</number>
        </property>
       </widget>
      </item>
@@ -285,7 +313,7 @@
   </connection>
   <connection>
    <sender>hsIntensityDivider</sender>
-   <signal>sliderMoved(int)</signal>
+   <signal>valueChanged(int)</signal>
    <receiver>spinBoxIntensityDivider</receiver>
    <slot>setValue(int)</slot>
    <hints>
@@ -312,6 +340,22 @@
     <hint type="destinationlabel">
      <x>262</x>
      <y>202</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>hsFocalWidth</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>spinBoxFocalWidth</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>262</x>
+     <y>276</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>176</x>
+     <y>242</y>
     </hint>
    </hints>
   </connection>

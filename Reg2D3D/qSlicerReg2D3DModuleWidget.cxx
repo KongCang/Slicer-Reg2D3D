@@ -15,7 +15,7 @@
 
 ==============================================================================*/
 
-#include <ctime>
+#include <ctime>  // for testing puposes
 
 // Qt includes
 #include <QDebug>
@@ -24,29 +24,31 @@
 #include "qSlicerReg2D3DModuleWidget.h"
 #include "ui_qSlicerReg2D3DModuleWidget.h"
 
+// Reg2D3D includes
+#include "ImageComparerMutualInformation.h"
+#include "helloworld.h"
+#include "DrrRenderer.h"
+#include "Geometry.h"
+
+// Reg2D3D Logic includes
+#include "vtkSlicerReg2D3DLogic.h"
+
 // MRML includes
-//#include <MRML/vtkMRMLReg2D3DParametersNode.h>
+#include <MRML/vtkMRMLReg2D3DParametersNode.h>
+#include <vtkMRMLScene.h>
 #include <vtkMRMLVolumeNode.h>
 #include <vtkMRMLLinearTransformNode.h>
 #include <vtkMRMLScalarVolumeNode.h>
+#include <vtkMRMLScalarVolumeDisplayNode.h>
+#include <vtkMRMLSelectionNode.h>
+
+//vtk includes
 #include <vtkNew.h>
 #include <vtkImageData.h>
 #include <vtkMatrix4x4.h>
 #include <vtkPointData.h>
 #include <vtkImageShiftScale.h>
 #include <vtkSmartPointer.h>
-
-// Custom includes
-#include "ImageComparerMutualInformation.h"
-
-//#include <vtkMRMLSelectionNode.h>
-//#include <vtkMRMLLinearTransformNode.h>
-
-#include "vtkSlicerReg2D3DLogic.h"
-
-#include "helloworld.h"
-#include "DrrRenderer.h"
-#include "Geometry.h"
 
 
 //-----------------------------------------------------------------------------
@@ -55,6 +57,13 @@ class qSlicerReg2D3DModuleWidgetPrivate: public Ui_qSlicerReg2D3DModuleWidget
 {
 public:
   qSlicerReg2D3DModuleWidgetPrivate();
+  ~qSlicerReg2D3DModuleWidgetPrivate();
+
+  vtkSlicerReg2D3DLogic* logic() const;
+
+//  void performROIVoxelGridAlignment();
+//  bool checkForVolumeParentTransform() const;
+//  void showUnsupportedTransVolumeVoxelCroppingDialog() const;
 };
 
 //-----------------------------------------------------------------------------
@@ -64,6 +73,44 @@ public:
 qSlicerReg2D3DModuleWidgetPrivate::qSlicerReg2D3DModuleWidgetPrivate()
 {
 }
+
+//-----------------------------------------------------------------------------
+qSlicerReg2D3DModuleWidgetPrivate::~qSlicerReg2D3DModuleWidgetPrivate()
+{
+}
+
+//-----------------------------------------------------------------------------
+vtkSlicerReg2D3DLogic* qSlicerReg2D3DModuleWidgetPrivate::logic() const
+{
+  Q_Q(const qSlicerReg2D3DModuleWidget);
+  return vtkSlicerReg2D3DLogic::SafeDownCast(q->logic());
+}
+
+//-----------------------------------------------------------------------------
+
+bool qSlicerReg2D3DModuleWidget::checkForVolumeParentTransform() const
+{
+  Q_ASSERT(this->InputVolumeComboBox);
+  Q_D(const qSlicerReg2D3DModuleWidget);
+
+
+  vtkSmartPointer<vtkMRMLVolumeNode> inputVolume = vtkMRMLVolumeNode::SafeDownCast(this->InputVolumeComboBox->currentNode());
+
+  //vtkSmartPointer<vtkMRMLVolumeNode> inputVolume = vtkMRMLVolumeNode::SafeDownCast(d->InputVolumeComboBox->currentNode());
+
+
+  if(!inputVolume)
+    return false;
+
+   vtkSmartPointer<vtkMRMLLinearTransformNode> volTransform  = vtkMRMLLinearTransformNode::SafeDownCast(inputVolume->GetParentTransformNode());
+
+   if(volTransform)
+       return true;
+
+
+   return false;
+}
+
 
 //-----------------------------------------------------------------------------
 // qSlicerReg2D3DModuleWidget methods
@@ -89,59 +136,126 @@ void qSlicerReg2D3DModuleWidget::setup()
 
   connect(d->InputVolumeComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
             this, SLOT(onInputVolumeChanged()));
+  connect(d->XRayVolumeComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
+            this, SLOT(onXRayVolumeChanged()));
+
   connect(d->ComputeButton, SIGNAL(clicked()),
-            this, SLOT(onApply()) );
+            this, SLOT(onCalculateMerit()) );
   connect(d->btnRenderImage, SIGNAL(clicked()),
-            this, SLOT(onRender()) );
+            this, SLOT(onRenderDRR()) );
 
 }
 
-void qSlicerReg2D3DModuleWidget::onApply()
+//-----------------------------------------------------------------------------
+void qSlicerReg2D3DModuleWidget::setMRMLScene(vtkMRMLScene* scene)
+{
+
+  this->Superclass::setMRMLScene(scene);
+  if(scene == NULL)
+    {
+    return;
+    }
+  this->initializeParameterNode(scene);
+  this->updateWidget();
+
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerReg2D3DModuleWidget::initializeParameterNode(vtkMRMLScene* scene)
+{
+  vtkCollection* parameterNodes = scene->GetNodesByClass("vtkMRMLReg2D3DParametersNode");
+
+  if(parameterNodes->GetNumberOfItems() > 0)
+    {
+    this->parametersNode = vtkMRMLReg2D3DParametersNode::SafeDownCast(parameterNodes->GetItemAsObject(0));
+    if(!this->parametersNode)
+      {
+      qCritical() << "FATAL ERROR: Cannot instantiate Reg2D3DParameterNode";
+      Q_ASSERT(this->parametersNode);
+      }
+    }
+  else
+    {
+    qDebug() << "No Reg2D3D parameter nodes found!";
+    this->parametersNode = vtkMRMLReg2D3DParametersNode::New();
+    scene->AddNode(this->parametersNode);
+    this->parametersNode->Delete();
+    }
+
+  parameterNodes->Delete();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCropVolumeModuleWidget::updateParameters()
+{
+  Q_D(qSlicerReg2D3DModuleWidget);
+  if(!this->parametersNode)
+    return;
+  vtkMRMLReg2D3DParametersNode *pNode = this->parametersNode;
+
+  vtkMRMLNode *volumeNode = d->InputVolumeComboBox->currentNode();
+  vtkMRMLNode *XRayVolumeNode = d->XRayVolumeComboBox->currentNode();
+
+  if(volumeNode)
+    pNode->SetInputVolumeNodeID(volumeNode->GetID());
+  else
+    pNode->SetInputVolumeNodeID(NULL);
+
+  if(XRayVolumeNode)
+    pNode->XRayVolumeNodeID(YRayVolumeNode->GetID());
+  else
+    pNode->SetXRayVolumeNodeID(NULL);
+
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerReg2D3DModuleWidget::updateWidget()
+{
+  Q_D(qSlicerReg2D3DModuleWidget);
+  if(!this->parametersNode || !this->mrmlScene())
+    {
+    return;
+    }
+  vtkMRMLReg2D3DParametersNode *parameterNode = this->parametersNode;
+
+  vtkMRMLNode *volumeNode = this->mrmlScene()->GetNodeByID(parameterNode->GetInputVolumeNodeID());
+  vtkMRMLNode *XRayVolumeNode = this->mrmlScene()->GetNodeByID(parameterNode->GetXRayVolumeNodeID());
+
+  if(volumeNode)
+    d->InputVolumeComboBox->setCurrentNode(volumeNode);
+  if(roiNode)
+    d->XRayVolumeComboBox->setCurrentNode(XRayVolumeNode);
+
+  return;
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerReg2D3DModuleWidget::onCalculateMerit()
 {
   Q_D(const qSlicerReg2D3DModuleWidget);
   vtkSlicerReg2D3DLogic *logic = vtkSlicerReg2D3DLogic::SafeDownCast(this->logic());
-  //float intensityDivider;
-  //Check if VolumeData is loaded and chosen
-  if(!d->InputVolumeComboBox->currentNode() ||
-       !d->InputXRayVolumeComboBox->currentNode())
-    return;
-/*
-  this->parametersNode->SetInputVolumeNodeID(d->InputVolumeComboBox->currentNode()->GetID());
-  this->parametersNode->SetInputXRayVolumeNodeID(d->InputXRayVolumeComboBox->currentNode()->GetID());
-*/
 
+  //Check if VolumeData is loaded and chosen
+  if(!d->InputVolumeComboBox->currentNode() || !d->InputXRayVolumeComboBox->currentNode())
+    return;
+
+  // Get selected nodes
   vtkMRMLVolumeNode *inputVolume = vtkMRMLVolumeNode::SafeDownCast(d->InputVolumeComboBox->currentNode());
   vtkMRMLVolumeNode *inputXRayVolume = vtkMRMLVolumeNode::SafeDownCast(d->InputXRayVolumeComboBox->currentNode());
 
   vtkMRMLScalarVolumeNode *inputnode = vtkMRMLScalarVolumeNode::SafeDownCast(inputVolume);
   vtkMRMLScalarVolumeNode *xraynode = vtkMRMLScalarVolumeNode::SafeDownCast(inputXRayVolume);
 
-  int intensityDivider=d->hsIntensityDivider->value();
- /* vtkNew<vtkImageData> imageDataWorkingCopy;
-    imageDataWorkingCopy->DeepCopy(inputnode->GetImageData());
-*/
-
   //Prepare the resulting Image
-  //vtkImageData resImage;
   vtkSmartPointer<vtkImageData> resultImage = vtkImageData::New();
-  //resultImage = &resImage;
-  //vtkSmartPointer<vtkImageData> pResultImage=&resultImage;
   resultImage->SetExtent(0,409,0,409,0,0);
   resultImage->SetSpacing(1,1,1);
   resultImage->SetOrigin(0, 0, 0);
-  //resultImage->SetNumberOfScalarComponents(3);
-  //resultImage->SetScalarType(VTK_UNSIGNED_SHORT);
   resultImage->AllocateScalars(VTK_UNSIGNED_SHORT,3);
-  cerr << "resultImageExtentSet" << endl;
   unsigned short int* dummy=static_cast<unsigned short*>(resultImage->GetScalarPointer(0,0,0));
-  cerr << "resultImagePointer" << endl;
   for (int i=0; i<410*410; i++){
       *(dummy++)=0;
   }
-  cerr << "resultImageInitialized" << endl;
-  Geometry machine(1536.0f,intensityDivider);    //focal width =1536mm
-  Geometry* pMachine = &machine;
-  cout << intensityDivider;
 
   //Later used for transformation
   vtkNew<vtkMatrix4x4> inputRASToIJK;
@@ -156,7 +270,7 @@ void qSlicerReg2D3DModuleWidget::onApply()
   xraynode->GetImageData()->GetDimensions(xDims);
   vtkSmartPointer<vtkImageData> id=inputnode->GetImageData();
   vtkSmartPointer<vtkImageData> xd=xraynode->GetImageData();
-int testdims[3];
+  int testdims[3];
   id->GetDimensions(testdims);
 
   cerr << "Input Extents:" << testdims[0] << ", " << testdims[1] << ", "<< testdims[2] << endl;
@@ -216,102 +330,106 @@ int testdims[3];
 
   cerr << "MeritFunction Value=" << MValue << endl << "Yeah" << endl;
 
-
-
-  DrrRenderer drrRenderer(inputnode, pMachine);
-  drrRenderer.computeDrr(resultImage);
-  dummy=static_cast<unsigned short*>(resultImage->GetScalarPointer(0,0,0));
-   logic->writepgmimagefile(dummy, 410, 410, "Drr.pgm");
-
-
-
-/*    const int N = 16;
-
-    char a[N] = "Hello \0\0\0\0\0\0";
-    int b[N] = {15, 10, 6, 0, -11, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-    cout <<  a << "-->" << endl;
-
-    cuda_hello(a, b, N);
-
-    cout <<  a << endl;
-*/
 }
 
-void qSlicerReg2D3DModuleWidget::onRender(){onApply();}
+void qSlicerReg2D3DModuleWidget::onRenderDRR(){
+    Q_D(const qSlicerReg2D3DModuleWidget);
+    vtkSlicerReg2D3DLogic *logic = vtkSlicerReg2D3DLogic::SafeDownCast(this->logic());
 
-void qSlicerReg2D3DModuleWidget::onInputVolumeChanged()
-{
+    //Check if VolumeData is loaded and chosen
+    if(!d->InputVolumeComboBox->currentNode())
+      return;
 
-}
+    // Get data and prepare it
+    // Get volumeNode
+    vtkMRMLVolumeNode *inputVolume = vtkMRMLVolumeNode::SafeDownCast(d->InputVolumeComboBox->currentNode());
+    vtkMRMLScalarVolumeNode *inputnode = vtkMRMLScalarVolumeNode::SafeDownCast(inputVolume);
 
-void qSlicerReg2D3DModuleWidget::setMRMLScene(vtkMRMLScene* scene)
-{
+    // Get other parameters
+    int intensityDivider=d->hsIntensityDivider->value();
+    float focalWidth = static_cast<float>(d->hsFocalWidth->value());
 
-  this->Superclass::setMRMLScene(scene);
-  if(scene == NULL)
-    {
-    return;
+    //Prepare machine properties
+    Geometry machine(focalWidth,intensityDivider);    //focal width =1536mm
+    Geometry* pMachine = &machine;
+
+    //Get scene
+    //vtkMRMLScene *scene = this->GetMRMLScene();
+
+
+
+    //Prepare the resulting Image, Size is hardcoded
+    vtkSmartPointer<vtkImageData> resultImage = vtkImageData::New();
+    resultImage->SetExtent(0,409,0,409,0,0);
+    resultImage->SetSpacing(1,1,1);
+    resultImage->SetOrigin(0, 0, 0);
+    resultImage->AllocateScalars(VTK_UNSIGNED_SHORT,1);  //3 Components (=Dimensions)
+    unsigned short int* dummy=static_cast<unsigned short*>(resultImage->GetScalarPointer(0,0,0));
+    for (int i=0; i<410*410; i++){  //size hardcoded
+        *(dummy++)=0;
     }
 
+    vtkSmartPointer<vtkMRMLScalarVolumeNode> outputNode = vtkMRMLScalarVolumeNode::New();
+    outputNode->SetSpacing(1.0,1.0,1.0);
+    outputNode->SetAndObserveImageData(resultImage);
+    outputNode->SetName("DRR");
+    mrmlScene()->AddNode(outputNode);
+
+    //vtkSmartPointer<vtkMRMLScalarVolumeNode> outputVolume = vtkMRMLScalarVolumeNode::New();
+
+    //Resulting node
+    //vtkSmartPointer<vtkMRMLScalarVolumeNode> svNode = vtkMRMLScalarVolumeNode::New();
+
+    //outputNode->CopyWithScene(svNode);
+    vtkSmartPointer<vtkMRMLScalarVolumeDisplayNode> outputDisplayNode = vtkMRMLScalarVolumeDisplayNode::New();
+    mrmlScene()->AddNode(outputDisplayNode);
+    //vtkSmartPointer<vtkMRMLLinearTransformNode> transformNode = mrmlScene()->GetNodesByName("Transform");
+
+    //outputDisplayNode->CopyWithScene(svNode->GetDisplayNode());
+    //scene->AddNode(displayNode.GetPointer());
+
+    //Check for Transfrom node
+    if (checkForVolumeParentTransform())
+        cerr << "Transformnode exists";
+
+    DrrRenderer drrRenderer(inputnode, pMachine);
+    cerr << "vor DrrRenderer\n";
+    drrRenderer.computeDrr(resultImage);
+    dummy=static_cast<unsigned short*>(resultImage->GetScalarPointer(0,0,0));
+    logic->writepgmimagefile(dummy, 410, 410, "Drr.pgm");
+    //outputNode->SetAndObserveImageData(resultImage);
+    //outputNode->SetAndObserveDisplayNodeID(outputDisplayNode->GetID);
+    //outputNode->SetAndObserveStorageNodeID(NULL);
+    //scene->AddNode(outputNode);
+
+    //outputVolume = outputNode.GetPointer();
 
 }
 
 //-----------------------------------------------------------------------------
-
-bool qSlicerReg2D3DModuleWidget::checkForVolumeParentTransform() const
+void qSlicerReg2D3DModuleWidget::onInputVolumeChanged()
 {
-  Q_ASSERT(this->InputVolumeComboBox);
-  Q_D(const qSlicerReg2D3DModuleWidget);
+  Q_D(qSlicerReg2D3DModuleWidget);
+  Q_ASSERT(d->InputVolumeComboBox);
+/*  Q_ASSERT(d->VoxelBasedModeRadioButton);
 
-
-  //vtkSmartPointer<vtkMRMLVolumeNode> inputVolume = vtkMRMLVolumeNode::SafeDownCast(this->InputVolumeComboBox->currentNode());
-
-  vtkSmartPointer<vtkMRMLVolumeNode> inputVolume = vtkMRMLVolumeNode::SafeDownCast(d->InputVolumeComboBox->currentNode());
-
-
-  if(!inputVolume)
-    return false;
-
-   vtkSmartPointer<vtkMRMLLinearTransformNode> volTransform  = vtkMRMLLinearTransformNode::SafeDownCast(inputVolume->GetParentTransformNode());
-
-   if(volTransform)
-       return true;
-
-
-   return false;
-}
-
-
-
-void qSlicerReg2D3DModuleWidget::updateWidget()
-{
-    return;
-}
-
-
-
-/*void qSlicerReg2D3DModuleWidget::initializeParameterNode(vtkMRMLScene* scene)
-{
-  vtkCollection* parameterNodes = scene->GetNodesByClass("vtkMRMLReg2D3DParametersNode");
-
-  if(parameterNodes->GetNumberOfItems() > 0)
+  vtkMRMLNode* node = d->InputVolumeComboBox->currentNode();
+  if(node)
     {
-    this->parametersNode = vtkMRMLReg2D3DParametersNode::SafeDownCast(parameterNodes->GetItemAsObject(0));
-    if(!this->parametersNode)
+    if(d->VoxelBasedModeRadioButton->isChecked())
       {
-      qCritical() << "FATAL ERROR: Cannot instantiate Reg2D3DParameterNode";
-      Q_ASSERT(this->parametersNode);
+      if(d->checkForVolumeParentTransform())
+        {
+        d->showUnsupportedTransVolumeVoxelCroppingDialog();
+        d->InputVolumeComboBox->setCurrentNode(NULL);
+        }
+      else
+        {
+        d->performROIVoxelGridAlignment();
+        }
       }
     }
-  else
-    {
-    qDebug() << "No Reg2D3D parameter nodes found!";
-    this->parametersNode = vtkMRMLReg2D3DParametersNode::New();
-    scene->AddNode(this->parametersNode);
-    this->parametersNode->Delete();
-    }
-
-  parameterNodes->Delete();
-}
 */
+}
+
+

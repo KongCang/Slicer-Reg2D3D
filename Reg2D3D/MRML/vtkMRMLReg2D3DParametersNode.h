@@ -6,9 +6,9 @@
   or http://www.slicer.org/copyright/copyright.txt for details.
 
   Program:   3D Slicer
-  Module:    $RCSfile: vtkMRMLVolumeRenderingParametersNode.h,v $
-  Date:      $Date: 2015/11/22 14:41:24 $
-  Version:   $Revision: 1.0 $
+  Module:    $RCSfile: vtkMRMLReg2D3DParametersNode.h,v $
+  Date:      $Date: 2016/03/15 11:20:00 $
+  Version:   $Revision: 1.1 $
 
 =========================================================================auto=*/
 // .NAME vtkMRMLReg2D3DParametersNode - MRML node for storing a slice through RAS space
@@ -57,11 +57,15 @@ class VTK_SLICER_REG2D3D_MODULE_MRML_EXPORT vtkMRMLReg2D3DParametersNode : publi
 
   // Description:
   vtkSetStringMacro(InputVolumeNodeID);
-  vtkGetStringMacro (InputVolumeNodeID);
+  vtkGetStringMacro(InputVolumeNodeID);
   vtkSetStringMacro(OutputVolumeNodeID);
-  vtkGetStringMacro (OutputVolumeNodeID);
-  vtkSetStringMacro(InputXRayVolumeNodeID);
-  vtkGetStringMacro (InputXRayVolumeNodeID);
+  vtkGetStringMacro(OutputVolumeNodeID);
+  vtkSetStringMacro(XRayVolumeNodeID);
+  vtkGetStringMacro(XRayVolumeNodeID);
+  vtkSetStringMacro(LinearTransformNodeID);
+  vtkGetStringMacro(LinearTransformNodeID);
+
+
 //  vtkSetStringMacro(ROINodeID);
 //  vtkGetStringMacro (ROINodeID);
 
@@ -92,7 +96,9 @@ protected:
 
   char *InputVolumeNodeID;
   char *OutputVolumeNodeID;
-  char *InputXRayVolumeNodeID;
+  char *XRayVolumeNodeID;
+  char *LinearTransformNodeID;
+
 //  char *ROINodeID;
 
 //  bool ROIVisibility;
