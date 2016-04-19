@@ -14,15 +14,16 @@
   limitations under the License.
 
 ==============================================================================*/
-
-#include <ctime>  // for testing puposes
-
 // Qt includes
 #include <QDebug>
+#include <QMessageBox>
+#include <QScopedPointer>
 
 // SlicerQt includes
 #include "qSlicerReg2D3DModuleWidget.h"
 #include "ui_qSlicerReg2D3DModuleWidget.h"
+#include <qSlicerAbstractCoreModule.h>
+
 
 // Reg2D3D includes
 #include "ImageComparerMutualInformation.h"
@@ -30,8 +31,12 @@
 #include "DrrRenderer.h"
 #include "Geometry.h"
 
+
 // Reg2D3D Logic includes
-#include "vtkSlicerReg2D3DLogic.h"
+#include "Logic/vtkSlicerReg2D3DLogic.h"
+
+// qMRML includes
+#include <qMRMLNodeFactory.h>
 
 // MRML includes
 #include <MRML/vtkMRMLReg2D3DParametersNode.h>
@@ -42,6 +47,9 @@
 #include <vtkMRMLScalarVolumeDisplayNode.h>
 #include <vtkMRMLSelectionNode.h>
 
+// MRMLLogic includes
+#include <vtkMRMLApplicationLogic.h>
+
 //vtk includes
 #include <vtkNew.h>
 #include <vtkImageData.h>
@@ -50,13 +58,20 @@
 #include <vtkImageShiftScale.h>
 #include <vtkSmartPointer.h>
 
+// for testing puposes
+#include <ctime>
+
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class qSlicerReg2D3DModuleWidgetPrivate: public Ui_qSlicerReg2D3DModuleWidget
 {
+   Q_DECLARE_PUBLIC(qSlicerReg2D3DModuleWidget);
+protected:
+  qSlicerReg2D3DModuleWidget* const q_ptr;
+
 public:
-  qSlicerReg2D3DModuleWidgetPrivate();
+  qSlicerReg2D3DModuleWidgetPrivate(qSlicerReg2D3DModuleWidget& object);
   ~qSlicerReg2D3DModuleWidgetPrivate();
 
   vtkSlicerReg2D3DLogic* logic() const;
@@ -70,7 +85,7 @@ public:
 // qSlicerReg2D3DModuleWidgetPrivate methods
 
 //-----------------------------------------------------------------------------
-qSlicerReg2D3DModuleWidgetPrivate::qSlicerReg2D3DModuleWidgetPrivate()
+qSlicerReg2D3DModuleWidgetPrivate::qSlicerReg2D3DModuleWidgetPrivate(qSlicerReg2D3DModuleWidget& object) : q_ptr(&object)
 {
 }
 
@@ -82,34 +97,34 @@ qSlicerReg2D3DModuleWidgetPrivate::~qSlicerReg2D3DModuleWidgetPrivate()
 //-----------------------------------------------------------------------------
 vtkSlicerReg2D3DLogic* qSlicerReg2D3DModuleWidgetPrivate::logic() const
 {
-  Q_Q(const qSlicerReg2D3DModuleWidget);
+    Q_Q(const qSlicerReg2D3DModuleWidget);
   return vtkSlicerReg2D3DLogic::SafeDownCast(q->logic());
 }
 
 //-----------------------------------------------------------------------------
 
-bool qSlicerReg2D3DModuleWidget::checkForVolumeParentTransform() const
-{
-  Q_ASSERT(this->InputVolumeComboBox);
-  Q_D(const qSlicerReg2D3DModuleWidget);
+//bool qSlicerReg2D3DModuleWidget::checkForVolumeParentTransform() const
+//{
+//  Q_ASSERT(this->InputVolumeComboBox);
+//  Q_D(const qSlicerReg2D3DModuleWidget);
 
 
-  vtkSmartPointer<vtkMRMLVolumeNode> inputVolume = vtkMRMLVolumeNode::SafeDownCast(this->InputVolumeComboBox->currentNode());
+//  vtkSmartPointer<vtkMRMLVolumeNode> inputVolume = vtkMRMLVolumeNode::SafeDownCast(this->InputVolumeComboBox->currentNode());
 
-  //vtkSmartPointer<vtkMRMLVolumeNode> inputVolume = vtkMRMLVolumeNode::SafeDownCast(d->InputVolumeComboBox->currentNode());
-
-
-  if(!inputVolume)
-    return false;
-
-   vtkSmartPointer<vtkMRMLLinearTransformNode> volTransform  = vtkMRMLLinearTransformNode::SafeDownCast(inputVolume->GetParentTransformNode());
-
-   if(volTransform)
-       return true;
+//  //vtkSmartPointer<vtkMRMLVolumeNode> inputVolume = vtkMRMLVolumeNode::SafeDownCast(d->InputVolumeComboBox->currentNode());
 
 
-   return false;
-}
+//  if(!inputVolume)
+//    return false;
+
+//   vtkSmartPointer<vtkMRMLLinearTransformNode> volTransform  = vtkMRMLLinearTransformNode::SafeDownCast(inputVolume->GetParentTransformNode());
+
+//   if(volTransform)
+//       return true;
+
+
+//   return false;
+//}
 
 
 //-----------------------------------------------------------------------------
@@ -118,7 +133,7 @@ bool qSlicerReg2D3DModuleWidget::checkForVolumeParentTransform() const
 //-----------------------------------------------------------------------------
 qSlicerReg2D3DModuleWidget::qSlicerReg2D3DModuleWidget(QWidget* _parent)
   : Superclass( _parent )
-  , d_ptr( new qSlicerReg2D3DModuleWidgetPrivate )
+  , d_ptr( new qSlicerReg2D3DModuleWidgetPrivate(*this) )
 {
 }
 
@@ -144,6 +159,15 @@ void qSlicerReg2D3DModuleWidget::setup()
   connect(d->btnRenderImage, SIGNAL(clicked()),
             this, SLOT(onRenderDRR()) );
 
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerReg2D3DModuleWidget::enter()
+{
+  this->onInputVolumeChanged();
+  this->onXRayVolumeChanged();
+
+  this->Superclass::enter();
 }
 
 //-----------------------------------------------------------------------------
@@ -186,27 +210,47 @@ void qSlicerReg2D3DModuleWidget::initializeParameterNode(vtkMRMLScene* scene)
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerCropVolumeModuleWidget::updateParameters()
+void qSlicerReg2D3DModuleWidget::initializeNode(vtkMRMLNode *n)
+{
+  //vtkMRMLScene* scene = qobject_cast<qMRMLNodeFactory*>(this->sender())->mrmlScene();
+  //vtkMRMLAnnotationROINode::SafeDownCast(n)->Initialize(scene);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerReg2D3DModuleWidget::initializeOutputVolume()  //not yet done
+{
+
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerReg2D3DModuleWidget::onEndCloseEvent()
+{
+  this->initializeParameterNode(this->mrmlScene());
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerReg2D3DModuleWidget::updateParameters()
 {
   Q_D(qSlicerReg2D3DModuleWidget);
   if(!this->parametersNode)
     return;
   vtkMRMLReg2D3DParametersNode *pNode = this->parametersNode;
 
-  vtkMRMLNode *volumeNode = d->InputVolumeComboBox->currentNode();
+  vtkMRMLNode *InputVolumeNode = d->InputVolumeComboBox->currentNode();
   vtkMRMLNode *XRayVolumeNode = d->XRayVolumeComboBox->currentNode();
 
-  if(volumeNode)
-    pNode->SetInputVolumeNodeID(volumeNode->GetID());
+  if(InputVolumeNode)
+    pNode->SetInputVolumeNodeID(InputVolumeNode->GetID());
   else
     pNode->SetInputVolumeNodeID(NULL);
 
   if(XRayVolumeNode)
-    pNode->XRayVolumeNodeID(YRayVolumeNode->GetID());
+    pNode->SetXRayVolumeNodeID(XRayVolumeNode->GetID());
   else
     pNode->SetXRayVolumeNodeID(NULL);
 
 }
+
 
 //-----------------------------------------------------------------------------
 void qSlicerReg2D3DModuleWidget::updateWidget()
@@ -218,13 +262,17 @@ void qSlicerReg2D3DModuleWidget::updateWidget()
     }
   vtkMRMLReg2D3DParametersNode *parameterNode = this->parametersNode;
 
-  vtkMRMLNode *volumeNode = this->mrmlScene()->GetNodeByID(parameterNode->GetInputVolumeNodeID());
+  vtkMRMLNode *InputVolumeNode = this->mrmlScene()->GetNodeByID(parameterNode->GetInputVolumeNodeID());
   vtkMRMLNode *XRayVolumeNode = this->mrmlScene()->GetNodeByID(parameterNode->GetXRayVolumeNodeID());
+  vtkMRMLNode *OutputVolumeNode = this->mrmlScene()->GetNodeByID(parameterNode->GetOutputVolumeNodeID());
 
-  if(volumeNode)
-    d->InputVolumeComboBox->setCurrentNode(volumeNode);
-  if(roiNode)
+  if(InputVolumeNode)
+    d->InputVolumeComboBox->setCurrentNode(InputVolumeNode);
+  if(XRayVolumeNode)
     d->XRayVolumeComboBox->setCurrentNode(XRayVolumeNode);
+  if(OutputVolumeNode)
+    d->OutputVolumeComboBox->setCurrentNode(OutputVolumeNode);
+
 
   return;
 }
@@ -236,15 +284,20 @@ void qSlicerReg2D3DModuleWidget::onCalculateMerit()
   vtkSlicerReg2D3DLogic *logic = vtkSlicerReg2D3DLogic::SafeDownCast(this->logic());
 
   //Check if VolumeData is loaded and chosen
-  if(!d->InputVolumeComboBox->currentNode() || !d->InputXRayVolumeComboBox->currentNode())
+  if(!d->InputVolumeComboBox->currentNode() || !d->XRayVolumeComboBox->currentNode())
     return;
+
+  this->parametersNode->SetInputVolumeNodeID(d->InputVolumeComboBox->currentNode()->GetID());
+  this->parametersNode->SetOutputVolumeNodeID(d->OutputVolumeComboBox->currentNode()->GetID());
+  this->parametersNode->SetXRayVolumeNodeID(d->XRayVolumeComboBox->currentNode()->GetID());
+  this->parametersNode->SetLinearTransformNodeID(d->LinearTransformComboBox->currentNode()->GetID());
 
   // Get selected nodes
   vtkMRMLVolumeNode *inputVolume = vtkMRMLVolumeNode::SafeDownCast(d->InputVolumeComboBox->currentNode());
-  vtkMRMLVolumeNode *inputXRayVolume = vtkMRMLVolumeNode::SafeDownCast(d->InputXRayVolumeComboBox->currentNode());
+  vtkMRMLVolumeNode *xRayVolume = vtkMRMLVolumeNode::SafeDownCast(d->XRayVolumeComboBox->currentNode());
 
   vtkMRMLScalarVolumeNode *inputnode = vtkMRMLScalarVolumeNode::SafeDownCast(inputVolume);
-  vtkMRMLScalarVolumeNode *xraynode = vtkMRMLScalarVolumeNode::SafeDownCast(inputXRayVolume);
+  vtkMRMLScalarVolumeNode *xraynode = vtkMRMLScalarVolumeNode::SafeDownCast(xRayVolume);
 
   //Prepare the resulting Image
   vtkSmartPointer<vtkImageData> resultImage = vtkImageData::New();
@@ -389,9 +442,9 @@ void qSlicerReg2D3DModuleWidget::onRenderDRR(){
     //scene->AddNode(displayNode.GetPointer());
 
     //Check for Transfrom node
-    if (checkForVolumeParentTransform())
+/*    if (checkForVolumeParentTransform())
         cerr << "Transformnode exists";
-
+*/
     DrrRenderer drrRenderer(inputnode, pMachine);
     cerr << "vor DrrRenderer\n";
     drrRenderer.computeDrr(resultImage);
@@ -432,4 +485,29 @@ void qSlicerReg2D3DModuleWidget::onInputVolumeChanged()
 */
 }
 
+//-----------------------------------------------------------------------------
+void qSlicerReg2D3DModuleWidget::onXRayVolumeChanged()
+{
+  Q_D(qSlicerReg2D3DModuleWidget);
+  Q_ASSERT(d->XRayVolumeComboBox);
+/*  Q_ASSERT(d->VoxelBasedModeRadioButton);
+
+  vtkMRMLNode* node = d->InputVolumeComboBox->currentNode();
+  if(node)
+    {
+    if(d->VoxelBasedModeRadioButton->isChecked())
+      {
+      if(d->checkForVolumeParentTransform())
+        {
+        d->showUnsupportedTransVolumeVoxelCroppingDialog();
+        d->InputVolumeComboBox->setCurrentNode(NULL);
+        }
+      else
+        {
+        d->performROIVoxelGridAlignment();
+        }
+      }
+    }
+*/
+}
 

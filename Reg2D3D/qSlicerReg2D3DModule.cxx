@@ -62,7 +62,7 @@ qSlicerReg2D3DModule::~qSlicerReg2D3DModule()
 //-----------------------------------------------------------------------------
 QString qSlicerReg2D3DModule::helpText() const
 {
-  return "This is a loadable module that can be bundled in an extension";
+  return "Reg 2D3D registers a 2D-kV-Image to 3D-MV-Volume";
 }
 
 //-----------------------------------------------------------------------------

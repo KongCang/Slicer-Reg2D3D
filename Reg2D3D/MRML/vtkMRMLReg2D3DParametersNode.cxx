@@ -17,7 +17,7 @@ Version:   $Revision: 1.2 $
 #include <vtkObjectFactory.h>
 
 // MRML includes
-#include "vtkMRMLVolumeNode.h"
+#include "vtkMRMLNode.h"
 
 // Reg2D3DMRML includes
 #include "vtkMRMLReg2D3DParametersNode.h"

@@ -26,9 +26,8 @@
 class qSlicerReg2D3DModulePrivate;
 
 /// \ingroup Slicer_QtModules_ExtensionTemplate
-class Q_SLICER_QTMODULES_REG2D3D_EXPORT
-qSlicerReg2D3DModule
-  : public qSlicerLoadableModule
+class Q_SLICER_QTMODULES_REG2D3D_EXPORT qSlicerReg2D3DModule :
+  public qSlicerLoadableModule
 {
   Q_OBJECT
   Q_INTERFACES(qSlicerLoadableModule);
@@ -41,13 +40,13 @@ public:
 
   qSlicerGetTitleMacro(QTMODULE_TITLE);
 
+  virtual QIcon icon()const;
+  virtual QStringList categories()const;
+
   virtual QString helpText()const;
   virtual QString acknowledgementText()const;
   virtual QStringList contributors()const;
 
-  virtual QIcon icon()const;
-
-  virtual QStringList categories()const;
   virtual QStringList dependencies() const;
 
 protected:

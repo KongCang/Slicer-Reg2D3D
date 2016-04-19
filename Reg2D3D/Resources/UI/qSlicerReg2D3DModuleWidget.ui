@@ -7,28 +7,19 @@
     <x>0</x>
     <y>0</y>
     <width>525</width>
-    <height>340</height>
+    <height>462</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Reg2D3D</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
+   <property name="margin">
     <number>0</number>
    </property>
    <item>
-    <widget class="ctkCollapsibleButton" name="ParametersCollapsibleButton" native="true">
-     <property name="text" stdset="0">
+    <widget class="ctkCollapsibleButton" name="ParametersCollapsibleButton">
+     <property name="text">
       <string>Parameters</string>
      </property>
      <layout class="QFormLayout" name="parametersFormLayout">
@@ -52,16 +43,16 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="qMRMLNodeComboBox" name="InputVolumeComboBox" native="true">
-        <property name="nodeTypes" stdset="0">
+       <widget class="qMRMLNodeComboBox" name="InputVolumeComboBox">
+        <property name="nodeTypes">
          <stringlist>
           <string>vtkMRMLScalarVolumeNode</string>
          </stringlist>
         </property>
-        <property name="addEnabled" stdset="0">
+        <property name="addEnabled">
          <bool>false</bool>
         </property>
-        <property name="renameEnabled" stdset="0">
+        <property name="renameEnabled">
          <bool>true</bool>
         </property>
        </widget>
@@ -74,29 +65,56 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="qMRMLNodeComboBox" name="InputXRayVolumeComboBox" native="true">
-        <property name="nodeTypes" stdset="0">
+       <widget class="qMRMLNodeComboBox" name="XRayVolumeComboBox">
+        <property name="nodeTypes">
          <stringlist>
           <string>vtkMRMLScalarVolumeNode</string>
          </stringlist>
         </property>
-        <property name="editEnabled" stdset="0">
+        <property name="editEnabled">
          <bool>true</bool>
         </property>
-        <property name="renameEnabled" stdset="0">
+        <property name="renameEnabled">
          <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <layout class="QHBoxLayout" name="TechniqueRadioButtonsHorizontalLayout">
-        <property name="spacing">
-         <number>12</number>
-        </property>
-       </layout>
-      </item>
       <item row="5" column="1">
        <widget class="QWidget" name="EmptyWidget" native="true"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="OutputVolumeLabel">
+        <property name="text">
+         <string>Output Volume:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="qMRMLNodeComboBox" name="OutputVolumeComboBox"/>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="MeritFunctionLabel">
+        <property name="text">
+         <string>Merit function:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLabel" name="MeritFuntionValue">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="LinearTransformLabel">
+        <property name="text">
+         <string>Linear Transform:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="qMRMLNodeComboBox" name="LinearTransformComboBox"/>
       </item>
      </layout>
     </widget>
@@ -138,6 +156,19 @@
        </property>
       </widget>
      </item>
+     <item row="1" column="2">
+      <spacer name="horizontalSpacer1">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
      <item row="5" column="0" colspan="3">
       <widget class="QSlider" name="hsFocalWidth">
        <property name="minimum">
@@ -156,19 +187,6 @@
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
-     </item>
-     <item row="1" column="2">
-      <spacer name="horizontalSpacer1">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="lblIntensityDivider">
@@ -298,7 +316,7 @@
   <connection>
    <sender>qSlicerReg2D3DModuleWidget</sender>
    <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>InputXRayVolumeComboBox</receiver>
+   <receiver>XRayVolumeComboBox</receiver>
    <slot>setMRMLScene(vtkMRMLScene*)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -356,6 +374,38 @@
     <hint type="destinationlabel">
      <x>176</x>
      <y>242</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>qSlicerReg2D3DModuleWidget</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>OutputVolumeComboBox</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>262</x>
+     <y>230</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>178</x>
+     <y>112</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>qSlicerReg2D3DModuleWidget</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>LinearTransformComboBox</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>262</x>
+     <y>230</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>178</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
