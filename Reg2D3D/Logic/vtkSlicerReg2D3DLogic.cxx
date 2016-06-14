@@ -16,6 +16,7 @@
 ==============================================================================*/
 
 // C++ includes
+//#include <QDebug>
 #include <new>
 #include <string>
 #include <netinet/in.h>
@@ -35,6 +36,8 @@
 
 // STD includes
 #include <cassert>
+
+//#include "../MRML/vtkMRMLReg2D3DParametersNode.h"
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerReg2D3DLogic);
@@ -66,9 +69,48 @@ void vtkSlicerReg2D3DLogic::SetMRMLSceneInternal(vtkMRMLScene * newScene)
 }
 
 //-----------------------------------------------------------------------------
+void vtkSlicerReg2D3DLogic::ProcessMRMLNodesEvents ( vtkObject* caller, unsigned long event, void* vtkNotUsed(callData) )
+{
+  if (caller != NULL)
+    {
+      vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast(caller);
+      if ( event == vtkMRMLLinearTransformNode::TransformModifiedEvent && strcmp( transformNode->GetID(), this->ObservedTransformNode->GetID() ) == 0 )
+        if (this->GetMRMLScene()==NULL)
+          {
+            vtkErrorMacro("UpdateFromMRMLScene failed: scene is invalid");
+            return;
+          }
+/*      vtkCollection* parameterNodes = this->GetMRMLScene()->GetNodesByClass("vtkMRMLReg2D3DParametersNode");
+
+      if(parameterNodes->GetNumberOfItems() > 0)
+        {
+        this->ParametersNode = vtkMRMLReg2D3DParametersNode::SafeDownCast(parameterNodes->GetItemAsObject(0));
+          if(!this->ParametersNode)
+          {
+          qCritical() << "FATAL ERROR: Cannot instantiate Reg2D3DParameterNode";
+          Q_ASSERT(this->ParametersNode);
+          }
+
+        }
+*/
+      }
+}
+
+//-----------------------------------------------------------------------------
+void vtkSlicerReg2D3DLogic::SetAndObserveTransformNode( vtkMRMLLinearTransformNode* transformNode )
+{
+   vtkSmartPointer< vtkIntArray > events = vtkSmartPointer< vtkIntArray >::New();
+   events->InsertNextValue( vtkMRMLLinearTransformNode::TransformModifiedEvent );
+   vtkSetAndObserveMRMLNodeEventsMacro( this->ObservedTransformNode, transformNode, events.GetPointer() );
+}
+
+
+//-----------------------------------------------------------------------------
 void vtkSlicerReg2D3DLogic::RegisterNodes()
 {
   assert(this->GetMRMLScene() != 0);
+//  vtkMRMLReg2D3DParametersNode* pNode = vtkMRMLReg2D3DParametersNode::New();
+//  this->GetMRMLScene()->RegisterNodeClass(pNode);
 }
 
 //---------------------------------------------------------------------------
@@ -92,8 +134,8 @@ void vtkSlicerReg2D3DLogic
 double vtkSlicerReg2D3DLogic::CalculateMeritFctMutualInformation(imageType *imageBRawPtr, imageType *imageMRawPtr, unsigned short width, unsigned short height, unsigned long depth)
 {
 
-    writepgmimagefile(imageBRawPtr, width, height, "InputVol.pgm");
-    writepgmimagefile(imageMRawPtr, width, height, "xRayVol.pgm");
+//    writepgmimagefile(imageBRawPtr, width, height, "InputVol.pgm");
+//    writepgmimagefile(imageMRawPtr, width, height, "xRayVol.pgm");
 
 
     //Both camera
@@ -126,10 +168,6 @@ double vtkSlicerReg2D3DLogic::CalculateMeritFctMutualInformation(imageType *imag
     unsigned short imageMWidth  = width;
     unsigned short imageMHeigth = height;
 
-
-
-
-
     // if there is a mask (forget about this now)
     // if (this->mRankCorrRandomArray!= NULL)
     if(0) // commented out for the moment
@@ -155,13 +193,9 @@ double vtkSlicerReg2D3DLogic::CalculateMeritFctMutualInformation(imageType *imag
                // jointproba[i][j] = jointproba[i][j]/n;
             }
         }
-
-
     }
     else // if there is no mask
     {
-
-
         for (int x = 0; x < imageBWidth; x++)
         {
         //cerr << "Test in Merit-Schleife " << x << endl;
@@ -244,10 +278,7 @@ double vtkSlicerReg2D3DLogic::CalculateMeritFctMutualInformation(imageType *imag
         }
     }
 
-   // cerr << "hm: " << hm << "   hb: " << hb << " hmb: " << hmb << endl;
-
     zRes = 1000 * (-1.0+((2.0*hmb)/(hm+hb)));
-
     delete[]jointproba;
 
     return zRes;
@@ -292,34 +323,4 @@ void vtkSlicerReg2D3DLogic::writepgmimagefile(imageType *pImage, unsigned short 
 
     ofp.close();
 }
-
-/*void vtkSlicerReg2D3DLogic::CalculateDRR(vtkMRMLScalarVolumeNode* Volume, vtkImageData* CalculatedCBCTImage)
-{
-    vtkSmartPointer<vtkImageData> VolumeToBeRendered = vtkSmartPointer<vtkImageData> Volume->GetImageData();
-
-    //Dimensions of Volume
-    int iDims[3];
-    VolumeToBeRendered->GetDimensions(iDims);
-
-    // Change Range
-    double iRange[2];
-    vtkSmartPointer<vtkImageShiftScale> xShiftScale =
-        vtkSmartPointer<vtkImageShiftScale>::New();
-
-    if (iRange[1]-iRange[0]<256*256){
-    xShiftScale->SetInputData(VolumeToBeRendered);
-    xShiftScale->SetShift(-iRange[0]);
-    xShiftScale->Update();
-    xShiftScale->SetOutputScalarTypeToUnsignedShort();
-    xShiftScale->SetScale(65535.0/(iRange[1]-iRange[0]));
-    xShiftScale->Update();
-
-    Volume->SetAndObserveImageData(xShiftScale->GetOutput());
-    id=inputnode->GetImageData();
-    cerr << "Rescale iRange\n";
-    }
-
-
-
-}*/
 

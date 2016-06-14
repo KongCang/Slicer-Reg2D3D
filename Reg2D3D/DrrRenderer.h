@@ -20,6 +20,7 @@ public:
     DrrRenderer(vtkMRMLScalarVolumeNode* objectNode, Geometry* machine);
     ~DrrRenderer();
     void computeDrr(vtkImageData*);
+    void computeDRRCuda();
     int iDivUp(int a, int b){return (a % b != 0) ? (a / b + 1) : (a / b);}   // IntegerDivision rounding up
     void ShiftScale();
 
@@ -30,6 +31,9 @@ private:
     unsigned short imageSize;       // side length of computed image (square)
     Geometry* mMachine;             // Contains the geometry data
     unsigned short* mpResultImage;  // Pointer to resulting Image
+    bool volumeModified;
+    bool matrixModified;
+    bool geometryModified;
 };
 
 

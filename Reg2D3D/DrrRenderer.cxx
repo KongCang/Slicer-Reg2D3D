@@ -23,7 +23,7 @@ DrrRenderer::DrrRenderer(vtkMRMLScalarVolumeNode* objectNode, Geometry* machine)
     mNode=objectNode;
     mMachine=machine;
 
-    ShiftScale();   //Rescale for best contrast
+    //ShiftScale();   //Rescale for best contrast
 
     mVolumeData=objectNode->GetImageData();
 
@@ -64,6 +64,7 @@ DrrRenderer::~DrrRenderer() {}
 
 void DrrRenderer::computeDrr(vtkImageData* resultImage){
 
+    //Check if 2D square image
     int iResultDims[3];
     resultImage->GetDimensions(iResultDims);  //Side length of computed image
     if (iResultDims[0]==iResultDims[1]&&iResultDims[2]==1)
@@ -73,11 +74,12 @@ void DrrRenderer::computeDrr(vtkImageData* resultImage){
         return;
     }
 
+    //Prepare result image
     mpResultImage=static_cast<unsigned short int*>(resultImage->GetScalarPointer(0,0,0));
 
+    //Check Volume and prepare for CUDA
     int iVolumeDims[3];
     mVolumeData->GetDimensions(iVolumeDims);
-
     dim3 block_size;
     dim3 blocks;
     block_size = dim3(16,16);
@@ -85,34 +87,42 @@ void DrrRenderer::computeDrr(vtkImageData* resultImage){
 
     //Pointer on first pixel of Volume
     unsigned short int* iPixel = static_cast<unsigned short int*>(mVolumeData->GetScalarPointer(0,0,0));
-
+    cerr << "Step2\n";
     float transferFunc[] =
     {0.0833, 0.1667, 0.2500, 0.3334, 0.4167, 0.5000, 0.5834, 0.6668, 0.7501, 0.8335, 0.9168, 1}; // initial values
 
     drrRendererRayCastingCuda_updateTransferFunction(transferFunc);
     drrRendererRayCastingCuda_prepareVolumeUS(this->imageSize, iPixel, iVolumeDims[0], iVolumeDims[1], iVolumeDims[2], NULL, 0); //NULL, 0 are dummies
-
     int intensityDivider=mMachine->GetIntensityDivider();
     bool useMask1,useMask2;
     useMask1=useMask2=false;
     short currentMask=0;
     float imagePixelSize=1.;
+cerr << "Step4\n";
 
+    //Prepare TransformMatrix
+    float elems[16];
+    vtkSmartPointer<vtkMatrix4x4> pMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+    mNode->GetParentTransformNode()->GetMatrixTransformToWorld(pMatrix);
+    int k=0;
+    for (int i=0;i<4;i++){
+        for (int j=0;j<4;j++){
+            elems[k++]=pMatrix->GetElement(i,j);
+//Debug:            cerr << elems[4*i+j] << " ";
+        }
+//Debug:         cerr << "\n";
+    }
 
-    //vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
-    //mNode->GetParentTransformNode()->GetMatrixTransformToWorld(matrix);
-    //matrix->Invert();
-    //float* elems = static_cast<float*> (matrix[0][0]);
+cerr << "Step5\n";
 
-    float elems[] = {  1,  0,  0,  0,
-                       0,  1,  0,  0,
-                       0,  0,  1,  15,
-                       0,  0,  0,  1};
-    cerr << "Matrix: " << elems[0] << elems[1] << elems[4] << elems[5]<<endl;
-
+    //CUDA part
     drrRendererRayCastingCuda_computeMatrix(elems, mMachine->GetFocalWidth());
     render_kernelUS(blocks, block_size, mpResultImage, this->imageSize, imagePixelSize, mMachine->GetFocalWidth(), useMask1, useMask2, 0, imageSize-1, 0, imageSize-1, intensityDivider, currentMask);
     drrRendererRayCastingCuda_free();
+
+}
+
+void DrrRenderer::computeDRRCuda(){
 
 }
 

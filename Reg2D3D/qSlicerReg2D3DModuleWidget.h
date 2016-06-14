@@ -22,6 +22,19 @@
 #include "qSlicerAbstractModuleWidget.h"
 #include "qSlicerReg2D3DModuleExport.h"
 #include <vtkMRMLNode.h>
+#include <vtkMRMLLinearTransformNode.h>
+
+#include <vtkObserverManager.h>
+#include "vtkSlicerModuleLogic.h"
+#include <vtkNew.h>
+#include <vtkSmartPointer.h>
+#include <vtkCommand.h>
+#include <vtkMatrix4x4.h>
+#include <vtkObjectFactory.h>
+#include <vtkTransform.h>
+
+
+// #include <Libs/MRML/Logic/vtkMRMLAbstractLogic.h>
 
 class qSlicerReg2D3DModuleWidgetPrivate;
 class vtkMRMLNode;
@@ -39,6 +52,7 @@ public:
   qSlicerReg2D3DModuleWidget(QWidget *parent=0);
   virtual ~qSlicerReg2D3DModuleWidget();
 //  bool checkForVolumeParentTransform() const;
+//  void TranformChangedCallbackFunction ( vtkObject* caller, long unsigned int vtkNotUsed(eventId), void* vtkNotUsed(clientData), void* vtkNotUsed(callData) ){std::cout << "Transform changed callback" << std::endl;}
 
 public slots:
 
@@ -50,17 +64,24 @@ protected:
   virtual void setMRMLScene(vtkMRMLScene*);
 
   void initializeParameterNode(vtkMRMLScene*);
+  void initializeOutputVolumeNode(vtkMRMLScene*);
 
 protected slots:
 	  void initializeNode(vtkMRMLNode*); //done
-	  void initializeOutputVolume();  //not yet done
+      //void initializeObserver(vtkMRMLNode*);
+      //void initializeOutputVolume();  //not yet done
 	  void onInputVolumeChanged(); //done, dummy
       void onXRayVolumeChanged(); //done, dummy
+      void onOutputVolumeChanged();
+      void onLinearTransformChanged();
       void onCalculateMerit(); //done
 	  void onRenderDRR();  //done
 	  void updateParameters(); //done
 	  void updateWidget();  //done
 	  void onEndCloseEvent(); //done
+      void onLinearTransformModified();
+      void setDRRasOutputVolume(vtkMRMLScene* scene);
+
 	  //void onApply();
 	  //void onOutputVolumeChanged();
 

@@ -25,6 +25,8 @@
 #include "vtkMRMLNode.h"
 #include "vtkSlicerReg2D3DModuleMRMLExport.h"
 
+#include "../Geometry.h"
+
 // class vtkMRMLAnnotationROINode;
 class vtkMRMLVolumeNode;
 
@@ -56,6 +58,7 @@ class VTK_SLICER_REG2D3D_MODULE_MRML_EXPORT vtkMRMLReg2D3DParametersNode : publi
   virtual const char* GetNodeTagName() {return "Reg2D3DParameters";};
 
   // Description:
+  // Get/Set-Methods
   vtkSetStringMacro(InputVolumeNodeID);
   vtkGetStringMacro(InputVolumeNodeID);
   vtkSetStringMacro(OutputVolumeNodeID);
@@ -65,28 +68,13 @@ class VTK_SLICER_REG2D3D_MODULE_MRML_EXPORT vtkMRMLReg2D3DParametersNode : publi
   vtkSetStringMacro(LinearTransformNodeID);
   vtkGetStringMacro(LinearTransformNodeID);
 
-
-//  vtkSetStringMacro(ROINodeID);
-//  vtkGetStringMacro (ROINodeID);
-
-  /*vtkSetMacro(IsotropicResampling,bool);
-  vtkGetMacro(IsotropicResampling,bool);
-  vtkBooleanMacro(IsotropicResampling,bool);
-
-  vtkSetMacro(ROIVisibility,bool);
-  vtkGetMacro(ROIVisibility,bool);
-  vtkBooleanMacro(ROIVisibility,bool);
-
-  vtkSetMacro(VoxelBased,bool);
-  vtkGetMacro(VoxelBased,bool);
-  vtkBooleanMacro(VoxelBased,bool);
-
-  vtkSetMacro(InterpolationMode, int);
-  vtkGetMacro(InterpolationMode, int);
-
-  vtkSetMacro(SpacingScalingConst, double);
-  vtkGetMacro(SpacingScalingConst, double);
+/*  vtkSetMacro(IntensityDivider,int);
+  vtkGetMacro(IntensityDivider,int);
+  vtkSetMacro(FocalWidth,float);
+  vtkGetMacro(FocalWidth,float);
 */
+
+
 protected:
   vtkMRMLReg2D3DParametersNode();
   ~vtkMRMLReg2D3DParametersNode();
@@ -94,18 +82,16 @@ protected:
   vtkMRMLReg2D3DParametersNode(const vtkMRMLReg2D3DParametersNode&);
   void operator=(const vtkMRMLReg2D3DParametersNode&);
 
+//  void InitializeOutputVolumeNode();
+
   char *InputVolumeNodeID;
   char *OutputVolumeNodeID;
   char *XRayVolumeNodeID;
   char *LinearTransformNodeID;
 
-//  char *ROINodeID;
-
-//  bool ROIVisibility;
-  bool VoxelBased;
-//  int InterpolationMode;
-//  bool IsotropicResampling;
-//  double SpacingScalingConst;
+/*  int IntensityDivider;
+  float FocalWidth;
+*/
 };
 
 #endif

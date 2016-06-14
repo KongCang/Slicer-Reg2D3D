@@ -15,7 +15,9 @@ Version:   $Revision: 1.2 $
 // VTK includes
 #include <vtkCommand.h>
 #include <vtkObjectFactory.h>
-
+#include <vtkImageData.h>
+#include <vtkMRMLScalarVolumeNode.h>
+#include <vtkMRMLScalarVolumeDisplayNode.h>
 // MRML includes
 #include "vtkMRMLNode.h"
 
@@ -23,7 +25,7 @@ Version:   $Revision: 1.2 $
 #include "vtkMRMLReg2D3DParametersNode.h"
 
 // AnnotationModuleMRML includes
-#include "vtkMRMLAnnotationROINode.h"
+//#include "vtkMRMLAnnotationROINode.h"
 
 // STD includes
 
@@ -40,7 +42,13 @@ vtkMRMLReg2D3DParametersNode::vtkMRMLReg2D3DParametersNode()
   this->XRayVolumeNodeID = NULL;
   this->LinearTransformNodeID = NULL;
 
-//  this->ROIVisibility = false;
+//  this->IntensityDivider=100;
+//  this->FocalWidth = 1536;
+
+
+  //this->InitializeOutputVolumeNode();
+
+    //  this->ROIVisibility = false;
 //  this->InterpolationMode = 2;
 
   //this->VoxelBased = true;
@@ -94,31 +102,31 @@ void vtkMRMLReg2D3DParametersNode::ReadXMLAttributes(const char** atts)
       this->SetOutputVolumeNodeID(attValue);
       continue;
     }
-    if (!strcmp(attName, "XRayVolumeNodeID"))
+    if (!strcmp(attName, "xRayVolumeNodeID"))
     {
       this->SetXRayVolumeNodeID(attValue);
       continue;
     }
-    if (!strcmp(attName, "LinearTransformNodeID"))
+    if (!strcmp(attName, "linearTransformNodeID"))
     {
       this->SetLinearTransformNodeID(attValue);
       continue;
     }
-    /*if (!strcmp(attName,"XRayVolumeVisibility"))
+/*    if (!strcmp(attName,"intensityDivider"))
     {
       std::stringstream ss;
       ss << attValue;
-      ss >> this->XRayVolumeVisibility;
+      ss >> this->IntensityDivider;
       continue;
     }
-    if (!strcmp(attName,"interpolationMode"))
+    if (!strcmp(attName,"focalWidth"))
     {
       std::stringstream ss;
       ss << attValue;
-      ss >> this->InterpolationMode;
+      ss >> this->FocalWidth;
       continue;
     }
-    */
+*/
   }
 
   this->WriteXML(std::cout,1);
@@ -135,6 +143,9 @@ void vtkMRMLReg2D3DParametersNode::WriteXML(ostream& of, int nIndent)
   of << indent << " outputVolumeNodeID=\"" << (this->OutputVolumeNodeID ? this->OutputVolumeNodeID : "NULL") << "\"";
   of << indent << " xRayVolumeNodeID=\"" << (this->XRayVolumeNodeID ? this->XRayVolumeNodeID : "NULL") << "\"";
   of << indent << " linearTransformNodeID=\"" << (this->LinearTransformNodeID ? this->LinearTransformNodeID : "NULL") << "\"";
+/*  of << indent << " intensityDivider=\"" << this->IntensityDivider << "\"";
+  of << indent << " focalWidth=\"" << this->FocalWidth << "\"";
+*/
 }
 
 //----------------------------------------------------------------------------
@@ -150,8 +161,9 @@ void vtkMRMLReg2D3DParametersNode::Copy(vtkMRMLNode *anode)
   this->SetOutputVolumeNodeID(node->GetOutputVolumeNodeID());
   this->SetXRayVolumeNodeID(node->GetXRayVolumeNodeID());
   this->SetLinearTransformNodeID(node->GetLinearTransformNodeID());
-  //this->SetROIVisibility(node->GetROIVisibility());
-
+/*  this->SetIntensityDivider(node->GetIntensityDivider());
+  this->SetFocalWidth(node->GetFocalWidth());
+*/
   this->DisableModifiedEventOff();
   this->InvokePendingModifiedEvent();
 }
@@ -165,8 +177,9 @@ void vtkMRMLReg2D3DParametersNode::PrintSelf(ostream& os, vtkIndent indent)
   os << "OutputVolumeNodeID: " << ( (this->OutputVolumeNodeID) ? this->OutputVolumeNodeID : "None" ) << "\n";
   os << "XRayVolumeNodeID: " << ( (this->XRayVolumeNodeID) ? this->XRayVolumeNodeID : "None" ) << "\n";
   os << "LinearTransformNodeID: " << ( (this->LinearTransformNodeID) ? this->LinearTransformNodeID : "None" ) << "\n";
-//  os << "InterpolationMode: " << this->InterpolationMode << "\n";
-//  os << "IsotropicResampling: " << this->IsotropicResampling << "\n";
-}
+/*  os << "IntensityDivider: " << this->IntensityDivider << "\n";
+  os << "FocalWidth: " << this->FocalWidth << "\n";
+*/}
 
 // End
+

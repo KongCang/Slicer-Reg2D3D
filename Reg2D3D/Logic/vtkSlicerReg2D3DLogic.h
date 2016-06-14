@@ -35,9 +35,12 @@
 // MRML includes
 
 // STD includes
+
 #include <cstdlib>
 
+#include "vtkMRMLLinearTransformNode.h"
 #include "vtkSlicerReg2D3DModuleLogicExport.h"
+//#include "../MRML/vtkMRMLReg2D3DParametersNode.h"
 
 typedef unsigned short imageType;
 
@@ -50,21 +53,25 @@ public:
   static vtkSlicerReg2D3DLogic *New();
   vtkTypeMacro(vtkSlicerReg2D3DLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream& os, vtkIndent indent);
+  void SetAndObserveTransformNode(vtkMRMLLinearTransformNode* transformNode );
   double CalculateMeritFctMutualInformation(imageType *mImageBase, imageType *mImageMatch, unsigned short width, unsigned short height, unsigned long depth);
   void writepgmimagefile(imageType *pImage, unsigned short width, unsigned short height, std::string FileName);
+  vtkMRMLLinearTransformNode* ObservedTransformNode=NULL;
+  //vtkMRMLReg2D3DParametersNode* ParametersNode=NULL;
 
 protected:
   vtkSlicerReg2D3DLogic();
   virtual ~vtkSlicerReg2D3DLogic();
 
+  virtual void ProcessMRMLNodesEvents ( vtkObject* caller, unsigned long event, void* vtkNotUsed(callData) );
   virtual void SetMRMLSceneInternal(vtkMRMLScene* newScene);
   /// Register MRML Node classes to Scene. Gets called automatically when the MRMLScene is attached to this logic class.
   virtual void RegisterNodes();
   virtual void UpdateFromMRMLScene();
   virtual void OnMRMLSceneNodeAdded(vtkMRMLNode* node);
   virtual void OnMRMLSceneNodeRemoved(vtkMRMLNode* node);
-private:
 
+private:
   vtkSlicerReg2D3DLogic(const vtkSlicerReg2D3DLogic&); // Not implemented
   void operator=(const vtkSlicerReg2D3DLogic&); // Not implemented
 };
