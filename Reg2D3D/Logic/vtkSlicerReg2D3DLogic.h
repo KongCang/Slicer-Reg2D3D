@@ -40,7 +40,8 @@
 
 #include "vtkMRMLLinearTransformNode.h"
 #include "vtkSlicerReg2D3DModuleLogicExport.h"
-//#include "../MRML/vtkMRMLReg2D3DParametersNode.h"
+
+class vtkMRMLReg2D3DParametersNode;
 
 typedef unsigned short imageType;
 
@@ -58,6 +59,7 @@ public:
   void writepgmimagefile(imageType *pImage, unsigned short width, unsigned short height, std::string FileName);
   vtkMRMLLinearTransformNode* ObservedTransformNode=NULL;
   //vtkMRMLReg2D3DParametersNode* ParametersNode=NULL;
+  vtkMRMLReg2D3DParametersNode* ParametersNode;
 
 protected:
   vtkSlicerReg2D3DLogic();

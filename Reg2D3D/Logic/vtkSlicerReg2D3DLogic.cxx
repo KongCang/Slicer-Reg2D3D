@@ -16,10 +16,11 @@
 ==============================================================================*/
 
 // C++ includes
-//#include <QDebug>
+#include <QDebug>
 #include <new>
 #include <string>
 #include <netinet/in.h>
+#include <QtGlobal>
 
 // Reg2D3D Logic includes
 #include "vtkSlicerReg2D3DLogic.h"
@@ -37,7 +38,7 @@
 // STD includes
 #include <cassert>
 
-//#include "../MRML/vtkMRMLReg2D3DParametersNode.h"
+#include "vtkMRMLReg2D3DParametersNode.h"
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerReg2D3DLogic);
@@ -75,14 +76,18 @@ void vtkSlicerReg2D3DLogic::ProcessMRMLNodesEvents ( vtkObject* caller, unsigned
     {
       vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast(caller);
       if ( event == vtkMRMLLinearTransformNode::TransformModifiedEvent && strcmp( transformNode->GetID(), this->ObservedTransformNode->GetID() ) == 0 )
-        if (this->GetMRMLScene()==NULL)
-          {
-            vtkErrorMacro("UpdateFromMRMLScene failed: scene is invalid");
-            return;
-          }
-/*      vtkCollection* parameterNodes = this->GetMRMLScene()->GetNodesByClass("vtkMRMLReg2D3DParametersNode");
+        {
+          cerr << "In Process\n";
+          if (this->GetMRMLScene()==NULL)
+            {
+              vtkErrorMacro("UpdateFromMRMLScene failed: scene is invalid");
+              return;
+            }
+        }
 
-      if(parameterNodes->GetNumberOfItems() > 0)
+    vtkCollection* parameterNodes = this->GetMRMLScene()->GetNodesByClass("vtkMRMLReg2D3DParametersNode");
+
+     if(parameterNodes->GetNumberOfItems() > 0)
         {
         this->ParametersNode = vtkMRMLReg2D3DParametersNode::SafeDownCast(parameterNodes->GetItemAsObject(0));
           if(!this->ParametersNode)
@@ -90,10 +95,15 @@ void vtkSlicerReg2D3DLogic::ProcessMRMLNodesEvents ( vtkObject* caller, unsigned
           qCritical() << "FATAL ERROR: Cannot instantiate Reg2D3DParameterNode";
           Q_ASSERT(this->ParametersNode);
           }
+          vtkMRMLNode *OutputVolumeNode = this->GetMRMLScene()->GetNodeByID(ParametersNode->GetOutputVolumeNodeID());
+          OutputVolumeNode->Modified();
+          cerr << "Transform modified\n";
+
 
         }
-*/
-      }
+
+
+   }
 }
 
 //-----------------------------------------------------------------------------

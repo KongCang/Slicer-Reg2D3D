@@ -7,8 +7,8 @@ string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 find_package(CUDA REQUIRED)
 
 #-----------------------------------------------------------------------------
-add_subdirectory(Logic)
 add_subdirectory(MRML)
+add_subdirectory(Logic)
 add_subdirectory(Widgets)
 
 #-----------------------------------------------------------------------------

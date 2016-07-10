@@ -5,11 +5,13 @@ set(KIT ${PROJECT_NAME})
 set(${KIT}_EXPORT_DIRECTIVE "VTK_SLICER_${MODULE_NAME_UPPER}_MODULE_LOGIC_EXPORT")
 
 set(${KIT}_INCLUDE_DIRECTORIES
+# ../MRML
   )
 
 set(${KIT}_SRCS
   vtkSlicer${MODULE_NAME}Logic.cxx
   vtkSlicer${MODULE_NAME}Logic.h
+#  ../MRML/vtkMRML${MODULE_NAME}ParametersNode.h
   )
 
 set(${KIT}_TARGET_LIBRARIES

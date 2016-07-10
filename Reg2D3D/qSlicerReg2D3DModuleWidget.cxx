@@ -408,28 +408,14 @@ void qSlicerReg2D3DModuleWidget::onInputVolumeChanged()
 {
   Q_D(qSlicerReg2D3DModuleWidget);
   Q_ASSERT(d->InputVolumeComboBox);
- //   this->parametersNode->SetInputVolumeNodeID(d->InputVolumeComboBox->currentNode()->GetID());
-
-
-/*  Q_ASSERT(d->VoxelBasedModeRadioButton);
+  if (!this->parametersNode)
+      return;
 
   vtkMRMLNode* node = d->InputVolumeComboBox->currentNode();
   if(node)
     {
-    if(d->VoxelBasedModeRadioButton->isChecked())
-      {
-      if(d->checkForVolumeParentTransform())
-        {
-        d->showUnsupportedTransVolumeVoxelCroppingDialog();
-        d->InputVolumeComboBox->setCurrentNode(NULL);
-        }
-      else
-        {
-        d->performROIVoxelGridAlignment();
-        }
-      }
+      this->parametersNode->SetInputVolumeNodeID(d->InputVolumeComboBox->currentNode()->GetID());
     }
-*/
 }
 
 //-----------------------------------------------------------------------------
@@ -437,29 +423,64 @@ void qSlicerReg2D3DModuleWidget::onXRayVolumeChanged()
 {
   Q_D(qSlicerReg2D3DModuleWidget);
   Q_ASSERT(d->XRayVolumeComboBox);
-  //this->parametersNode->SetXRayVolumeNodeID(d->XRayVolumeComboBox->currentNode()->GetID());
+    if (!this->parametersNode)
+        return;
 
-}
+    vtkMRMLNode* node = d->XRayVolumeComboBox->currentNode();
+    if(node)
+      {
+        this->parametersNode->SetXRayVolumeNodeID(d->XRayVolumeComboBox->currentNode()->GetID());
+      }
+  }
 
 //-----------------------------------------------------------------------------
 void qSlicerReg2D3DModuleWidget::onOutputVolumeChanged()
 {
- cerr << "onOutputVolumeChanged\n";
     Q_D(qSlicerReg2D3DModuleWidget);
-  Q_ASSERT(d->OutputVolumeComboBox);
-  //vtkMRMLLinearTransformNode *transform = vtkMRMLLinearTransformNode::SafeDownCast(d->LinearTransformComboBox->currentNode());
- // this->parametersNode->SetOutputVolumeNodeID(d->OutputVolumeComboBox->currentNode()->GetID());
-/*  if (transform){
-      vtkMRMLScalarVolumeNode *outputVolume = vtkMRMLScalarVolumeNode::SafeDownCast(d->OutputVolumeComboBox->currentNode());
-      outputVolume->SetAndObserveTransformNodeID(transform->GetID());
-  }*/
+    Q_ASSERT(d->OutputVolumeComboBox);
+
+    if (!this->parametersNode)
+      return;
+
+    vtkMRMLNode* node = d->OutputVolumeComboBox->currentNode();
+    if(node)
+      {
+        this->parametersNode->SetOutputVolumeNodeID(d->OutputVolumeComboBox->currentNode()->GetID());
+      }
+
+    vtkMRMLLinearTransformNode *transform = vtkMRMLLinearTransformNode::SafeDownCast(d->LinearTransformComboBox->currentNode());
+    if (transform)
+      {
+        vtkMRMLScalarVolumeNode *outputVolume = vtkMRMLScalarVolumeNode::SafeDownCast(d->OutputVolumeComboBox->currentNode());
+//        outputVolume->SetAndObserveTransformNodeID(transform->GetID());
+      }
 }
 
 //-----------------------------------------------------------------------------
 void qSlicerReg2D3DModuleWidget::onLinearTransformChanged()
 {
-  Q_D(qSlicerReg2D3DModuleWidget);
-  Q_ASSERT(d->LinearTransformComboBox);
+    Q_D(qSlicerReg2D3DModuleWidget);
+    Q_ASSERT(d->LinearTransformComboBox);
+
+    if (!this->parametersNode)
+      return;
+
+    vtkMRMLLinearTransformNode *transform = vtkMRMLLinearTransformNode::SafeDownCast(d->LinearTransformComboBox->currentNode());
+    if (transform)
+    {
+      this->parametersNode->SetLinearTransformNodeID(d->OutputVolumeComboBox->currentNode()->GetID());
+    }
+
+    vtkMRMLNode* node = d->OutputVolumeComboBox->currentNode();
+    if(node && transform)
+      {
+        d->logic()->SetAndObserveTransformNode(transform);
+      }
+
+        //vtkMRMLLinearTransformNode *transform = vtkMRMLLinearTransformNode::SafeDownCast(d->LinearTransformComboBox->currentNode());
+
+        //        outputVolume->SetAndObserveTransformNodeID(transform->GetID());
+
 //  vtkMRMLLinearTransformNode *transform = vtkMRMLLinearTransformNode::SafeDownCast(d->LinearTransformComboBox->currentNode());
 //  vtkMRMLScalarVolumeNode *outputVolume = vtkMRMLScalarVolumeNode::SafeDownCast(d->OutputVolumeComboBox->currentNode());
 //  vtkMRMLScalarVolumeNode *inputVolume= vtkMRMLScalarVolumeNode::SafeDownCast(d->InputVolumeComboBox->currentNode());

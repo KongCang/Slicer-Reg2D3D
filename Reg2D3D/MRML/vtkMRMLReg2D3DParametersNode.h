@@ -68,11 +68,11 @@ class VTK_SLICER_REG2D3D_MODULE_MRML_EXPORT vtkMRMLReg2D3DParametersNode : publi
   vtkSetStringMacro(LinearTransformNodeID);
   vtkGetStringMacro(LinearTransformNodeID);
 
-/*  vtkSetMacro(IntensityDivider,int);
+  vtkSetMacro(IntensityDivider,int);
   vtkGetMacro(IntensityDivider,int);
   vtkSetMacro(FocalWidth,float);
   vtkGetMacro(FocalWidth,float);
-*/
+
 
 
 protected:
@@ -89,9 +89,9 @@ protected:
   char *XRayVolumeNodeID;
   char *LinearTransformNodeID;
 
-/*  int IntensityDivider;
+  int IntensityDivider;
   float FocalWidth;
-*/
+
 };
 
 #endif
