@@ -96,6 +96,7 @@ void vtkSlicerReg2D3DLogic::ProcessMRMLNodesEvents ( vtkObject* caller, unsigned
           Q_ASSERT(this->ParametersNode);
           }
           vtkMRMLNode *OutputVolumeNode = this->GetMRMLScene()->GetNodeByID(ParametersNode->GetOutputVolumeNodeID());
+
           OutputVolumeNode->Modified();
           cerr << "Transform modified\n";
 

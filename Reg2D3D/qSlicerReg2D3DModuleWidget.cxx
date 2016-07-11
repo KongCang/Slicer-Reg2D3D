@@ -254,6 +254,9 @@ void qSlicerReg2D3DModuleWidget::updateParameters()
   vtkMRMLNode *InputVolumeNode = d->InputVolumeComboBox->currentNode();
   vtkMRMLNode *XRayVolumeNode = d->XRayVolumeComboBox->currentNode();
   vtkMRMLNode *OutputVolumeNode = d->OutputVolumeComboBox->currentNode();
+  vtkMRMLNode *LinearTransformNode = d->LinearTransformComboBox->currentNode();
+  float focalWidth = static_cast<float>(d->hsFocalWidth->value());
+  int intensityDivider=d->hsIntensityDivider->value();
 
   if(InputVolumeNode)
     pNode->SetInputVolumeNodeID(InputVolumeNode->GetID());
@@ -270,12 +273,21 @@ void qSlicerReg2D3DModuleWidget::updateParameters()
   else
     pNode->SetOutputVolumeNodeID(NULL);
 
+  if(LinearTransformNode)
+    pNode->SetLinearTransformNodeID(LinearTransformNode->GetID());
+  else
+    pNode->SetLinearTransformNodeID(NULL);
+
+  pNode->SetIntensityDivider(intensityDivider);
+  pNode->SetFocalWidth(focalWidth);
+
 }
 
 
 //-----------------------------------------------------------------------------
 void qSlicerReg2D3DModuleWidget::updateWidget()
 {
+  cerr << "in UpdateWidget!!!!!!!\n\n";
   Q_D(qSlicerReg2D3DModuleWidget);
   if(!this->parametersNode || !this->mrmlScene())
     {
@@ -296,7 +308,7 @@ void qSlicerReg2D3DModuleWidget::updateWidget()
     d->OutputVolumeComboBox->setCurrentNode(OutputVolumeNode);
   if(LinearTransformNode)
     d->LinearTransformComboBox->setCurrentNode(LinearTransformNode);
-
+// eventuell dasselbe für focalWidth und intensityIdentifier
   return;
 }
 
@@ -461,42 +473,57 @@ void qSlicerReg2D3DModuleWidget::onLinearTransformChanged()
 {
     Q_D(qSlicerReg2D3DModuleWidget);
     Q_ASSERT(d->LinearTransformComboBox);
-
+    //cerr << " In onLinearTransfromChanged\n";
     if (!this->parametersNode)
       return;
-
+    //cerr << "paramnode exists\n";
     vtkMRMLLinearTransformNode *transform = vtkMRMLLinearTransformNode::SafeDownCast(d->LinearTransformComboBox->currentNode());
     if (transform)
     {
-      this->parametersNode->SetLinearTransformNodeID(d->OutputVolumeComboBox->currentNode()->GetID());
+      //cerr << "Transform exists\n";
+      //cerr << "transform: " << transform->GetID() << endl;
+      //cerr << "param: transform: " << /*this->parametersNode->GetLinearTransformNodeID() << */ endl;
+      if (this->parametersNode->GetLinearTransformNodeID()){
+        //cerr << "param-transfrom exists: " << this->parametersNode->GetLinearTransformNodeID();
+        if (strcmp( transform->GetID(), this->parametersNode->GetLinearTransformNodeID() ) == 0 )
+            {//cerr << "sind gleich\n";
+            return;}
+      }
+      this->parametersNode->SetLinearTransformNodeID(d->LinearTransformComboBox->currentNode()->GetID());
+      //cerr << "param: transform: " << this->parametersNode->GetLinearTransformNodeID() << endl;
+
     }
 
-    vtkMRMLNode* node = d->OutputVolumeComboBox->currentNode();
+    vtkMRMLVolumeNode *node=vtkMRMLVolumeNode::SafeDownCast(d->OutputVolumeComboBox->currentNode());
+
+    // vtkMRMLNode* node = d->OutputVolumeComboBox->currentNode();
+    if (node) cerr << "DRR-Node exists\n";
     if(node && transform)
       {
+        cerr << "SetAndObserve\n";
         d->logic()->SetAndObserveTransformNode(transform);
-      }
+     }
+}
 
-        //vtkMRMLLinearTransformNode *transform = vtkMRMLLinearTransformNode::SafeDownCast(d->LinearTransformComboBox->currentNode());
+void qSlicerReg2D3DModuleWidget::onFocalWidthChanged()
+{
+    Q_D(qSlicerReg2D3DModuleWidget);
+    Q_ASSERT(d->hsIntensityDivider);
+    if (!this->parametersNode)
+      return;
 
-        //        outputVolume->SetAndObserveTransformNodeID(transform->GetID());
+    int intensityDivider=d->hsIntensityDivider->value();
+    this->parametersNode->SetIntensityDivider(intensityDivider);
+}
 
-//  vtkMRMLLinearTransformNode *transform = vtkMRMLLinearTransformNode::SafeDownCast(d->LinearTransformComboBox->currentNode());
-//  vtkMRMLScalarVolumeNode *outputVolume = vtkMRMLScalarVolumeNode::SafeDownCast(d->OutputVolumeComboBox->currentNode());
-//  vtkMRMLScalarVolumeNode *inputVolume= vtkMRMLScalarVolumeNode::SafeDownCast(d->InputVolumeComboBox->currentNode());
-
-//  if (outputVolume&&transform){
-      //outputVolume->SetAndObserveTransformNodeID(transform->GetID());
-     /*
-      vtkSmartPointer<vtkCallbackCommand> TransformChangedCallback =
-          vtkSmartPointer<vtkCallbackCommand>::New();
-      TransformChangedCallback->SetCallback(this->TranformChangedCallbackFunction);
-      inputVolume->AddObserver(inputVolume->TransformModifiedEvent,TransformChangedCallback);
-*/
-//      d->logic()->SetAndObserveTransformNode(transform);
-//      this->parametersNode->SetLinearTransformNodeID(transform->GetID());
-
-//  }
+void qSlicerReg2D3DModuleWidget::onIntensityDividerChanged()
+{
+    Q_D(qSlicerReg2D3DModuleWidget);
+    Q_ASSERT(d->hsFocalWidth);
+    if (!this->parametersNode)
+      return;
+    float focalWidth = static_cast<float>(d->hsFocalWidth->value());
+    this->parametersNode->SetFocalWidth(focalWidth);
 }
 
 //-----------------------------------------------------------------------------
@@ -576,6 +603,7 @@ void qSlicerReg2D3DModuleWidget::initializeOutputVolumeNode(vtkMRMLScene* scene)
     scene->AddNode(outputNode);
     Q_D(qSlicerReg2D3DModuleWidget);
     d->OutputVolumeComboBox->setCurrentNode(outputNode);
+    onOutputVolumeChanged();
     cerr << outputNode->GetID() << endl;
 
 

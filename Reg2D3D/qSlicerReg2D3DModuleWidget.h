@@ -80,6 +80,8 @@ protected slots:
 	  void updateWidget();  //done
 	  void onEndCloseEvent(); //done
       void onLinearTransformModified();
+      void onFocalWidthChanged();
+      void onIntensityDividerChanged();
       void setDRRasOutputVolume(vtkMRMLScene* scene);
 
 	  //void onApply();
