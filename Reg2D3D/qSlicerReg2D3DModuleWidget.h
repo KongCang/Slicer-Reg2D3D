@@ -18,6 +18,8 @@
 #ifndef __qSlicerReg2D3DModuleWidget_h
 #define __qSlicerReg2D3DModuleWidget_h
 
+#include "Matrices.h"
+
 // SlicerQt includes
 #include "qSlicerAbstractModuleWidget.h"
 #include "qSlicerReg2D3DModuleExport.h"
@@ -74,6 +76,8 @@ protected slots:
       void onXRayVolumeChanged(); //done, dummy
       void onOutputVolumeChanged();
       void onLinearTransformChanged();
+      void onSetIdentity();
+      void onInvert();
       void onCalculateMerit(); //done
 	  void onRenderDRR();  //done
 	  void updateParameters(); //done
@@ -92,6 +96,8 @@ private:
   Q_DISABLE_COPY(qSlicerReg2D3DModuleWidget);
 
   vtkMRMLReg2D3DParametersNode *parametersNode;
+  Matrices* sourceTransform;
+  unsigned short volumeSize=330;   //Hardcoded, very messi
 };
 
 #endif

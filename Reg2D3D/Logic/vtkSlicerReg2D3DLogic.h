@@ -24,22 +24,22 @@
 #ifndef __vtkSlicerReg2D3DLogic_h
 #define __vtkSlicerReg2D3DLogic_h
 
-//C++ - Include
-#include <string>
+#include "vtkMRMLLinearTransformNode.h"
+#include "vtkSlicerReg2D3DModuleLogicExport.h"
 
 // Slicer includes
 #include "vtkSlicerModuleLogic.h"
 
-// Re2D3D Logic includes
+// Reg2D3D Logic includes
 
 // MRML includes
 
 // STD includes
 
+//C++ - Include
+#include <string>
 #include <cstdlib>
 
-#include "vtkMRMLLinearTransformNode.h"
-#include "vtkSlicerReg2D3DModuleLogicExport.h"
 
 class vtkMRMLReg2D3DParametersNode;
 

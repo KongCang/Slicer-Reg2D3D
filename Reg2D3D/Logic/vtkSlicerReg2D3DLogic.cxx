@@ -40,6 +40,7 @@
 
 #include "vtkMRMLReg2D3DParametersNode.h"
 
+
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerReg2D3DLogic);
 

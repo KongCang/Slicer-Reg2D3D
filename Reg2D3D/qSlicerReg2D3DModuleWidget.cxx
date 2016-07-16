@@ -29,6 +29,7 @@
 #include "helloworld.h"
 #include "DrrRenderer.h"
 #include "Geometry.h"
+#include "Matrices.h"
 
 // Reg2D3D Logic includes
 #include "Logic/vtkSlicerReg2D3DLogic.h"
@@ -144,7 +145,7 @@ void qSlicerReg2D3DModuleWidget::setup()
   Q_D(qSlicerReg2D3DModuleWidget);
   d->setupUi(this);
   this->Superclass::setup();
-
+  this->sourceTransform = new Matrices(4,4);
   connect(d->InputVolumeComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
             this, SLOT(onInputVolumeChanged()));
   connect(d->XRayVolumeComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
@@ -152,13 +153,22 @@ void qSlicerReg2D3DModuleWidget::setup()
   connect(d->OutputVolumeComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
             this, SLOT(onOutputVolumeChanged()));
   connect(d->LinearTransformComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
-            this, SLOT(onLinearTransformChanged()));
+            this, SLOT(onLinearTransformChanged()) );
   //connect(d->LinearTransformComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
   //          this, SLOT(initializeObserver(vtkMRMLNode*)));
   connect(d->ComputeButton, SIGNAL(clicked()),
             this, SLOT(onCalculateMerit()) );
   connect(d->btnRenderImage, SIGNAL(clicked()),
             this, SLOT(onRenderDRR()) );
+  connect(d->MatrixWidget,SIGNAL(matrixChanged()),this,SLOT(onLinearTransformModified()) );
+  connect(d->slRotX,SIGNAL(valueChanged(double)),this,SLOT(onLinearTransformModified()) );
+  connect(d->slRotY,SIGNAL(valueChanged(double)),this,SLOT(onLinearTransformModified()) );
+  connect(d->slRotZ,SIGNAL(valueChanged(double)),this,SLOT(onLinearTransformModified()) );
+  connect(d->slTransX,SIGNAL(valueChanged(double)),this,SLOT(onLinearTransformModified()) );
+  connect(d->slTransY,SIGNAL(valueChanged(double)),this,SLOT(onLinearTransformModified()) );
+  connect(d->slTransZ,SIGNAL(valueChanged(double)),this,SLOT(onLinearTransformModified()) );
+  connect(d->btnIdentity,SIGNAL(clicked(bool)),this,SLOT(onSetIdentity()) );
+  connect(d->btnInvert,SIGNAL(clicked(bool)),this,SLOT(onInvert()) );
 
 }
 
@@ -168,7 +178,7 @@ void qSlicerReg2D3DModuleWidget::enter()
   this->onInputVolumeChanged();
   this->onXRayVolumeChanged();
   this->onOutputVolumeChanged();
-  this->onLinearTransformChanged();
+  //this->onLinearTransformChanged();
   this->Superclass::enter();
 }
 
@@ -360,6 +370,7 @@ void qSlicerReg2D3DModuleWidget::onCalculateMerit()
   }
 
   double MValue = logic->CalculateMeritFctMutualInformation(DRRImage,XRayImage,dDims[0],dDims[1],256*256);
+  d->MeritFuntionValue->setText(QString::number(MValue));
   cerr << "MeritFunction Value=" << MValue << endl;
 
 }
@@ -369,12 +380,12 @@ void qSlicerReg2D3DModuleWidget::onRenderDRR(){
 
     Q_D(const qSlicerReg2D3DModuleWidget);
     vtkSlicerReg2D3DLogic *logic = vtkSlicerReg2D3DLogic::SafeDownCast(this->logic());
-
+    cerr  << "inRenderDRR!\n";
     //Check if VolumeData is loaded and chosen
     if(!d->InputVolumeComboBox->currentNode())       return;
     if(!d->OutputVolumeComboBox->currentNode())      return;
     if(!d->LinearTransformComboBox->currentNode())   return;
-
+    cerr << "anscheinend alles ok!\n";
     // Get data and prepare it
     // Get volumeNode
     vtkMRMLLinearTransformNode *transform = vtkMRMLLinearTransformNode::SafeDownCast(d->LinearTransformComboBox->currentNode());
@@ -413,6 +424,7 @@ void qSlicerReg2D3DModuleWidget::onRenderDRR(){
     outputVolume->SetAndObserveImageData(resultImage);
     outputVolume->Modified();
 
+
 }
 
 //-----------------------------------------------------------------------------
@@ -449,7 +461,7 @@ void qSlicerReg2D3DModuleWidget::onXRayVolumeChanged()
 void qSlicerReg2D3DModuleWidget::onOutputVolumeChanged()
 {
     Q_D(qSlicerReg2D3DModuleWidget);
-    Q_ASSERT(d->OutputVolumeComboBox);
+    Q_ASSERT(d->Outpu485tVolumeComboBox);
 
     if (!this->parametersNode)
       return;
@@ -478,6 +490,10 @@ void qSlicerReg2D3DModuleWidget::onLinearTransformChanged()
       return;
     //cerr << "paramnode exists\n";
     vtkMRMLLinearTransformNode *transform = vtkMRMLLinearTransformNode::SafeDownCast(d->LinearTransformComboBox->currentNode());
+    bool isLinearTransform = (transform!=NULL && transform->IsLinear());
+    //d->TranslationSliders->setVisible(isLinearTransform);
+    //d->RotationSliders->setVisible(isLinearTransform);
+
     if (transform)
     {
       //cerr << "Transform exists\n";
@@ -557,20 +573,55 @@ void qSlicerReg2D3DModuleWidget::onIntensityDividerChanged()
 //-----------------------------------------------------------------------------
 void qSlicerReg2D3DModuleWidget::onLinearTransformModified()
 {
-  /*Q_D(qSlicerReg2D3DModuleWidget);
-  Q_ASSERT(d->LinearTransformComboBox);
-  vtkMRMLLinearTransformNode *transform = vtkMRMLLinearTransformNode::SafeDownCast(d->LinearTransformComboBox->currentNode());
-  vtkMRMLScalarVolumeNode *outputVolume = vtkMRMLScalarVolumeNode::SafeDownCast(d->OutputVolumeComboBox->currentNode());
-  //vtkMRMLScalarVolumeNode *inputVolume= vtkMRMLScalarVolumeNode::SafeDownCast(d->InputVolumeComboBox->currentNode());
-  cout << "onlinch\n";
-  if (outputVolume&&transform){
-      outputVolume->SetAndObserveTransformNodeID(transform->GetID());
-      cout << "lin observed!\n";
-  }
-  cout << "onlinch-after\n";
-  */
-  cout << "onModified\n";
-  onRenderDRR();
+    Q_D(qSlicerReg2D3DModuleWidget);
+    if(!d->InputVolumeComboBox->currentNode())       return;
+    if(!d->OutputVolumeComboBox->currentNode())      return;
+    if(!d->LinearTransformComboBox->currentNode())   return;
+    double focal_width= d->hsFocalWidth->value();
+
+    if(!d->slRotX)  return;
+    double RX=d->slRotX->value();
+    if(!d->slRotY)  return;
+    double RY=d->slRotY->value();
+    if(!d->slRotZ)  return;
+    double RZ=d->slRotZ->value();
+    if(!d->slTransX)  return;
+    double TX=d->slTransX->value();
+    if(!d->slTransY)  return;
+    double TY=d->slTransY->value();
+    if(!d->slTransZ)  return;
+    double TZ=d->slTransZ->value();
+
+    this->sourceTransform->SetIdentityMatrix();
+    this->sourceTransform->TranslateMatrix(2.0 * TX / this->volumeSize, -2.0 * TY / this->volumeSize, 2.0 * (-1 * focal_width + TZ) / this->volumeSize);
+    this->sourceTransform->RotateMatrix(-1 * RZ,Rot_Axis_Z); //T*Rz
+    this->sourceTransform->RotateMatrix(RY,Rot_Axis_Y); //T*Rz*Ry
+    this->sourceTransform->RotateMatrix(-1 * RX,Rot_Axis_X); //T*Rz*Ry*Rx
+    this->sourceTransform->InvertMatrix();
+
+    vtkMRMLLinearTransformNode *transform = vtkMRMLLinearTransformNode::SafeDownCast(d->LinearTransformComboBox->currentNode());
+    vtkSmartPointer<vtkMatrix4x4> pMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+    for (int i=0;i<4;i++){
+        for (int j=0;j<4;j++){
+            pMatrix->SetElement(i,j,sourceTransform->GetMatrixData(i,j));
+            cerr << pMatrix->GetElement(i,j) << " ";
+            //elems[k++]=pMatrix->GetElement(i,j);
+        }
+        cerr << endl;
+    }
+    transform->SetAndObserveMatrixTransformFromParent(pMatrix);
+
+    cerr << "anscheinend alles ok!\n";
+    // Get data and prepare it
+    // Get volumeNode
+    //vtkMRMLLinearTransformNode *transform = vtkMRMLLinearTransformNode::SafeDownCast(d->LinearTransformComboBox->currentNode());
+    vtkMRMLScalarVolumeNode *inputVolume = vtkMRMLScalarVolumeNode::SafeDownCast(d->InputVolumeComboBox->currentNode());
+    vtkMRMLScalarVolumeNode *outputVolume = vtkMRMLScalarVolumeNode::SafeDownCast(d->OutputVolumeComboBox->currentNode());
+
+
+    onRenderDRR();
+    if(!d->XRayVolumeComboBox->currentNode())       return;
+    onCalculateMerit();
 }
 
 
@@ -607,6 +658,38 @@ void qSlicerReg2D3DModuleWidget::initializeOutputVolumeNode(vtkMRMLScene* scene)
     cerr << outputNode->GetID() << endl;
 
 
+}
+
+void qSlicerReg2D3DModuleWidget::onSetIdentity()
+{
+    Q_D(qSlicerReg2D3DModuleWidget);
+    if(!d->LinearTransformComboBox->currentNode())
+      return;
+
+    vtkMRMLLinearTransformNode *transform = vtkMRMLLinearTransformNode::SafeDownCast(d->LinearTransformComboBox->currentNode());
+    vtkSmartPointer<vtkMatrix4x4> pMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+    for (int i=0;i<4;i++){
+        for (int j=0;j<4;j++){
+            pMatrix->SetElement(i,j,((i==j)?1:0));
+            cerr << pMatrix->GetElement(i,j) << " ";
+            //elems[k++]=pMatrix->GetElement(i,j);
+        }
+        cerr << endl;
+    }
+    transform->SetAndObserveMatrixTransformFromParent(pMatrix);
+    d->slRotX->setValue(0);
+    d->slRotY->setValue(0);
+    d->slRotZ->setValue(0);
+    d->slTransX->setValue(0);
+    d->slTransY->setValue(0);
+    d->slTransZ->setValue(0);
+
+}
+
+void qSlicerReg2D3DModuleWidget::onInvert()
+{
+    //not implemented
+    return;
 }
 
 /*

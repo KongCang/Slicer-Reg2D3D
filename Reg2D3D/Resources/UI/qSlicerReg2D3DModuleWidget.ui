@@ -7,28 +7,19 @@
     <x>0</x>
     <y>0</y>
     <width>525</width>
-    <height>462</height>
+    <height>946</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Reg2D3D</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
+   <property name="margin">
     <number>0</number>
    </property>
    <item>
-    <widget class="ctkCollapsibleButton" name="ParametersCollapsibleButton" native="true">
-     <property name="text" stdset="0">
+    <widget class="ctkCollapsibleButton" name="ParametersCollapsibleButton">
+     <property name="text">
       <string>Parameters</string>
      </property>
      <layout class="QFormLayout" name="parametersFormLayout">
@@ -52,16 +43,16 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="qMRMLNodeComboBox" name="InputVolumeComboBox" native="true">
-        <property name="nodeTypes" stdset="0">
+       <widget class="qMRMLNodeComboBox" name="InputVolumeComboBox">
+        <property name="nodeTypes">
          <stringlist>
           <string>vtkMRMLScalarVolumeNode</string>
          </stringlist>
         </property>
-        <property name="addEnabled" stdset="0">
+        <property name="addEnabled">
          <bool>false</bool>
         </property>
-        <property name="renameEnabled" stdset="0">
+        <property name="renameEnabled">
          <bool>true</bool>
         </property>
        </widget>
@@ -74,16 +65,16 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="qMRMLNodeComboBox" name="XRayVolumeComboBox" native="true">
-        <property name="nodeTypes" stdset="0">
+       <widget class="qMRMLNodeComboBox" name="XRayVolumeComboBox">
+        <property name="nodeTypes">
          <stringlist>
           <string>vtkMRMLScalarVolumeNode</string>
          </stringlist>
         </property>
-        <property name="editEnabled" stdset="0">
+        <property name="editEnabled">
          <bool>true</bool>
         </property>
-        <property name="renameEnabled" stdset="0">
+        <property name="renameEnabled">
          <bool>true</bool>
         </property>
        </widget>
@@ -99,7 +90,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="qMRMLNodeComboBox" name="OutputVolumeComboBox" native="true"/>
+       <widget class="qMRMLNodeComboBox" name="OutputVolumeComboBox"/>
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="MeritFunctionLabel">
@@ -123,7 +114,7 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="qMRMLNodeComboBox" name="LinearTransformComboBox" native="true"/>
+       <widget class="qMRMLNodeComboBox" name="LinearTransformComboBox"/>
       </item>
      </layout>
     </widget>
@@ -149,6 +140,78 @@
      <property name="bottomMargin">
       <number>10</number>
      </property>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblIntensityDivider">
+       <property name="text">
+        <string>Intensity Divider</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="spinBoxIntensityDivider">
+       <property name="maximum">
+        <number>200</number>
+       </property>
+       <property name="singleStep">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>100</number>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QSpinBox" name="spinBoxFocalWidth">
+       <property name="minimum">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <number>2000</number>
+       </property>
+       <property name="value">
+        <number>1536</number>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="lblOther">
+       <property name="text">
+        <string>Focal Width</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <spacer name="horizontalSpacer2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="4" column="0" colspan="3">
+      <widget class="QSlider" name="hsFocalWidth">
+       <property name="minimum">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <number>2000</number>
+       </property>
+       <property name="pageStep">
+        <number>100</number>
+       </property>
+       <property name="value">
+        <number>1536</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
      <item row="2" column="0" colspan="3">
       <widget class="QSlider" name="hsIntensityDivider">
        <property name="minimum">
@@ -178,91 +241,6 @@
        </property>
       </spacer>
      </item>
-     <item row="5" column="0" colspan="3">
-      <widget class="QSlider" name="hsFocalWidth">
-       <property name="minimum">
-        <number>0</number>
-       </property>
-       <property name="maximum">
-        <number>2000</number>
-       </property>
-       <property name="pageStep">
-        <number>100</number>
-       </property>
-       <property name="value">
-        <number>1536</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="lblIntensityDivider">
-       <property name="text">
-        <string>Intensity Divider</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="lblOther">
-       <property name="text">
-        <string>Focal Width</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="2">
-      <spacer name="horizontalSpacer2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="3" column="0">
-      <spacer name="verticalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="1" column="1">
-      <widget class="QSpinBox" name="spinBoxIntensityDivider">
-       <property name="maximum">
-        <number>200</number>
-       </property>
-       <property name="singleStep">
-        <number>1</number>
-       </property>
-       <property name="value">
-        <number>100</number>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QSpinBox" name="spinBoxFocalWidth">
-       <property name="minimum">
-        <number>0</number>
-       </property>
-       <property name="maximum">
-        <number>2000</number>
-       </property>
-       <property name="value">
-        <number>1536</number>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
    <item>
@@ -270,6 +248,270 @@
      <property name="text">
       <string>Render Image</string>
      </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="qMRMLMatrixWidget" name="MatrixWidget"/>
+   </item>
+   <item>
+    <widget class="ctkCollapsibleGroupBox" name="CollapsibleGroupBox">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>250</height>
+      </size>
+     </property>
+     <property name="title">
+      <string>Rotation</string>
+     </property>
+     <widget class="QWidget" name="gridLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>9</x>
+        <y>10</y>
+        <width>501</width>
+        <height>77</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <property name="leftMargin">
+        <number>15</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>15</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="horizontalSpacing">
+        <number>2</number>
+       </property>
+       <property name="verticalSpacing">
+        <number>0</number>
+       </property>
+       <item row="0" column="1">
+        <widget class="qMRMLLinearTransformSlider" name="slRotZ">
+         <property name="minimum">
+          <double>-180.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>180.000000000000000</double>
+         </property>
+         <property name="TypeOfTransform">
+          <enum>qMRMLLinearTransformSlider::ROTATION_PA</enum>
+         </property>
+         <property name="CoordinateReference">
+          <enum>qMRMLLinearTransformSlider::LOCAL</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Z</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="qMRMLLinearTransformSlider" name="slRotY">
+         <property name="minimum">
+          <double>-180.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>180.000000000000000</double>
+         </property>
+         <property name="TypeOfTransform">
+          <enum>qMRMLLinearTransformSlider::ROTATION_IS</enum>
+         </property>
+         <property name="CoordinateReference">
+          <enum>qMRMLLinearTransformSlider::LOCAL</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="qMRMLLinearTransformSlider" name="slRotX">
+         <property name="decimals">
+          <number>2</number>
+         </property>
+         <property name="minimum">
+          <double>-180.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>180.000000000000000</double>
+         </property>
+         <property name="TypeOfTransform">
+          <enum>qMRMLLinearTransformSlider::ROTATION_LR</enum>
+         </property>
+         <property name="CoordinateReference">
+          <enum>qMRMLLinearTransformSlider::LOCAL</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Y</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>X</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="gridLayoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>9</x>
+        <y>96</y>
+        <width>501</width>
+        <height>78</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <property name="leftMargin">
+        <number>15</number>
+       </property>
+       <property name="topMargin">
+        <number>2</number>
+       </property>
+       <property name="rightMargin">
+        <number>15</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item row="0" column="2">
+        <widget class="qMRMLLinearTransformSlider" name="slTransZ">
+         <property name="decimals">
+          <number>1</number>
+         </property>
+         <property name="pageStep">
+          <double>100.000000000000000</double>
+         </property>
+         <property name="minimum">
+          <double>-2000.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>2000.000000000000000</double>
+         </property>
+         <property name="suffix">
+          <string>mm</string>
+         </property>
+         <property name="CoordinateReference">
+          <enum>qMRMLLinearTransformSlider::LOCAL</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Z</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>X</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Y</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="qMRMLLinearTransformSlider" name="slTransY">
+         <property name="decimals">
+          <number>1</number>
+         </property>
+         <property name="pageStep">
+          <double>100.000000000000000</double>
+         </property>
+         <property name="minimum">
+          <double>-2000.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>2000.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.000000000000000</double>
+         </property>
+         <property name="suffix">
+          <string>mm</string>
+         </property>
+         <property name="TypeOfTransform">
+          <enum>qMRMLLinearTransformSlider::TRANSLATION_PA</enum>
+         </property>
+         <property name="CoordinateReference">
+          <enum>qMRMLLinearTransformSlider::LOCAL</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="qMRMLLinearTransformSlider" name="slTransX">
+         <property name="decimals">
+          <number>1</number>
+         </property>
+         <property name="pageStep">
+          <double>100.000000000000000</double>
+         </property>
+         <property name="minimum">
+          <double>-2000.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>2000.000000000000000</double>
+         </property>
+         <property name="suffix">
+          <string>mm</string>
+         </property>
+         <property name="TypeOfTransform">
+          <enum>qMRMLLinearTransformSlider::TRANSLATION_IS</enum>
+         </property>
+         <property name="CoordinateReference">
+          <enum>qMRMLLinearTransformSlider::LOCAL</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QPushButton" name="btnIdentity">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>170</y>
+        <width>80</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>SetIdentity</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnInvert">
+      <property name="geometry">
+       <rect>
+        <x>110</x>
+        <y>170</y>
+        <width>80</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Invert</string>
+      </property>
+     </widget>
     </widget>
    </item>
    <item>
@@ -289,10 +531,25 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>qMRMLLinearTransformSlider</class>
+   <extends>qMRMLSliderWidget</extends>
+   <header>qMRMLLinearTransformSlider.h</header>
+  </customwidget>
+  <customwidget>
+   <class>qMRMLMatrixWidget</class>
+   <extends>ctkMatrixWidget</extends>
+   <header>qMRMLMatrixWidget.h</header>
+  </customwidget>
+  <customwidget>
    <class>qMRMLNodeComboBox</class>
    <extends>QWidget</extends>
    <header>qMRMLNodeComboBox.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>qMRMLSliderWidget</class>
+   <extends>ctkSliderWidget</extends>
+   <header>qMRMLSliderWidget.h</header>
   </customwidget>
   <customwidget>
    <class>qSlicerWidget</class>
@@ -305,6 +562,22 @@
    <extends>QWidget</extends>
    <header>ctkCollapsibleButton.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkCollapsibleGroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>ctkCollapsibleGroupBox.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkMatrixWidget</class>
+   <extends>QWidget</extends>
+   <header>ctkMatrixWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ctkSliderWidget</class>
+   <extends>QWidget</extends>
+   <header>ctkSliderWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
@@ -434,6 +707,22 @@
     <hint type="destinationlabel">
      <x>262</x>
      <y>361</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>LinearTransformComboBox</sender>
+   <signal>currentNodeChanged(vtkMRMLNode*)</signal>
+   <receiver>MatrixWidget</receiver>
+   <slot>setMRMLTransformNode(vtkMRMLNode*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>178</x>
+     <y>149</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>262</x>
+     <y>456</y>
     </hint>
    </hints>
   </connection>
