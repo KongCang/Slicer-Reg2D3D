@@ -158,6 +158,8 @@ void qSlicerReg2D3DModuleWidget::setup()
   //          this, SLOT(initializeObserver(vtkMRMLNode*)));
   connect(d->ComputeButton, SIGNAL(clicked()),
             this, SLOT(onCalculateMerit()) );
+  connect(d->btnSaveImages, SIGNAL(clicked()),
+            this, SLOT(onSaveImages()) );
   connect(d->btnRenderImage, SIGNAL(clicked()),
             this, SLOT(onRenderDRR()) );
   connect(d->MatrixWidget,SIGNAL(matrixChanged()),this,SLOT(onLinearTransformModified()) );
@@ -372,6 +374,66 @@ void qSlicerReg2D3DModuleWidget::onCalculateMerit()
   double MValue = logic->CalculateMeritFctMutualInformation(DRRImage,XRayImage,dDims[0],dDims[1],256*256);
   d->MeritFuntionValue->setText(QString::number(MValue));
   cerr << "MeritFunction Value=" << MValue << endl;
+
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerReg2D3DModuleWidget::onSaveImages()
+{
+  Q_D(const qSlicerReg2D3DModuleWidget);
+  vtkSlicerReg2D3DLogic *logic = vtkSlicerReg2D3DLogic::SafeDownCast(this->logic());
+
+  cerr << "\nSave Images";
+
+  //Check if VolumeData is loaded and chosen
+  if(!d->OutputVolumeComboBox->currentNode() || !d->XRayVolumeComboBox->currentNode())
+    return;
+
+  this->parametersNode->SetOutputVolumeNodeID(d->OutputVolumeComboBox->currentNode()->GetID());
+  this->parametersNode->SetXRayVolumeNodeID(d->XRayVolumeComboBox->currentNode()->GetID());
+
+  // Get selected nodes
+  vtkMRMLVolumeNode *DRRVolume=vtkMRMLVolumeNode::SafeDownCast(d->OutputVolumeComboBox->currentNode());
+  vtkMRMLVolumeNode *xRayVolume = vtkMRMLVolumeNode::SafeDownCast(d->XRayVolumeComboBox->currentNode());
+
+  vtkMRMLScalarVolumeNode *DRRnode = vtkMRMLScalarVolumeNode::SafeDownCast(DRRVolume);
+  vtkMRMLScalarVolumeNode *xRaynode = vtkMRMLScalarVolumeNode::SafeDownCast(xRayVolume);
+
+  unsigned short int DRRImage[410*410];
+  unsigned short int XRayImage[410*410];
+
+  int dDims[3],xDims[3];    //Dimensions of Images
+  DRRnode->GetImageData()->GetDimensions(dDims);
+  xRaynode->GetImageData()->GetDimensions(xDims);
+
+  vtkSmartPointer<vtkImageData> DRRd=DRRnode->GetImageData();
+  vtkSmartPointer<vtkImageData> XRayd=xRaynode->GetImageData();
+
+  /*double dRange[2],xRange[2];
+  DRRd->GetScalarRange(dRange);
+  XRayd->GetScalarRange(xRange);
+*/
+  unsigned short int* dummyDRR=static_cast<unsigned short int*>(DRRd->GetScalarPointer(0,0,0));
+  unsigned short int* dummyXRay=static_cast<unsigned short int*>(XRayd->GetScalarPointer(0,0,0));
+
+  //double dScale=65535./(dRange[1]-dRange[0]);
+  //double xScale=65535./(xRange[1]-xRange[0]);
+
+  for (int i=0;i<410*410;i++){
+      DRRImage[i]=(*(dummyDRR++));
+      XRayImage[i]=(*(dummyXRay++));
+  }
+
+  /*
+  double MValue = logic->CalculateMeritFctMutualInformation(DRRImage,XRayImage,dDims[0],dDims[1],256*256);
+  d->MeritFuntionValue->setText(QString::number(MValue));
+  cerr << "MeritFunction Value=" << MValue << endl;
+*/
+
+  logic->writepgmimagefile(DRRImage,410,410,"DRR.pgm");
+  logic->writepgmimagefile(XRayImage,410,410,"XRay.pgm");
+
+  cerr << "\n\nImages Saved\n\n";
 
 }
 
@@ -609,7 +671,8 @@ void qSlicerReg2D3DModuleWidget::onLinearTransformModified()
         }
         cerr << endl;
     }
-    transform->SetAndObserveMatrixTransformFromParent(pMatrix);
+    cerr << "Transform data set\n";
+    transform->SetAndObserveMatrixTransformToParent(pMatrix);
 
     cerr << "anscheinend alles ok!\n";
     // Get data and prepare it
@@ -646,6 +709,7 @@ void qSlicerReg2D3DModuleWidget::initializeOutputVolumeNode(vtkMRMLScene* scene)
     vtkSmartPointer<vtkMRMLScalarVolumeDisplayNode> outputDisplayNode = vtkMRMLScalarVolumeDisplayNode::New();
 
     outputNode->SetSpacing(1.0,1.0,1.0);
+    outputNode->SetIJKToRASDirections(-1.,0.,0.,0.,-1.,0.,0.,0.,1.);
     outputNode->SetAndObserveImageData(resultImage);
     outputNode->SetName("DRR");
     outputNode->SetAndObserveDisplayNodeID(outputDisplayNode->GetID());

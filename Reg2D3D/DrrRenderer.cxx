@@ -108,9 +108,9 @@ cerr << "Step4\n";
     for (int i=0;i<4;i++){
         for (int j=0;j<4;j++){
             elems[k++]=pMatrix->GetElement(i,j);
-//Debug:            cerr << elems[4*i+j] << " ";
+            cerr << elems[4*i+j] << " ";
         }
-//Debug:         cerr << "\n";
+         cerr << "\n";
     }
 
 cerr << "Step5\n";

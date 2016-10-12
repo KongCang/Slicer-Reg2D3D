@@ -79,6 +79,7 @@ protected slots:
       void onSetIdentity();
       void onInvert();
       void onCalculateMerit(); //done
+      void onSaveImages();  //ToDo
 	  void onRenderDRR();  //done
 	  void updateParameters(); //done
 	  void updateWidget();  //done
