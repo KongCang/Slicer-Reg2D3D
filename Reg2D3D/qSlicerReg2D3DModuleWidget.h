@@ -23,9 +23,9 @@
 // SlicerQt includes
 #include "qSlicerAbstractModuleWidget.h"
 #include "qSlicerReg2D3DModuleExport.h"
+
 #include <vtkMRMLNode.h>
 #include <vtkMRMLLinearTransformNode.h>
-
 #include <vtkObserverManager.h>
 #include "vtkSlicerModuleLogic.h"
 #include <vtkNew.h>
@@ -34,9 +34,6 @@
 #include <vtkMatrix4x4.h>
 #include <vtkObjectFactory.h>
 #include <vtkTransform.h>
-
-
-// #include <Libs/MRML/Logic/vtkMRMLAbstractLogic.h>
 
 class qSlicerReg2D3DModuleWidgetPrivate;
 class vtkMRMLNode;
@@ -53,15 +50,11 @@ public:
   typedef qSlicerAbstractModuleWidget Superclass;
   qSlicerReg2D3DModuleWidget(QWidget *parent=0);
   virtual ~qSlicerReg2D3DModuleWidget();
-//  bool checkForVolumeParentTransform() const;
-//  void TranformChangedCallbackFunction ( vtkObject* caller, long unsigned int vtkNotUsed(eventId), void* vtkNotUsed(clientData), void* vtkNotUsed(callData) ){std::cout << "Transform changed callback" << std::endl;}
-
-public slots:
 
 protected:
   QScopedPointer<qSlicerReg2D3DModuleWidgetPrivate> d_ptr;
 
-  virtual void setup();	//done
+  virtual void setup();	// Just signals/slots are connected
   virtual void enter(); //done
   virtual void setMRMLScene(vtkMRMLScene*);
 
@@ -70,8 +63,6 @@ protected:
 
 protected slots:
 	  void initializeNode(vtkMRMLNode*); //done
-      //void initializeObserver(vtkMRMLNode*);
-      //void initializeOutputVolume();  //not yet done
 	  void onInputVolumeChanged(); //done, dummy
       void onXRayVolumeChanged(); //done, dummy
       void onOutputVolumeChanged();
@@ -89,16 +80,13 @@ protected slots:
       void onIntensityDividerChanged();
       void setDRRasOutputVolume(vtkMRMLScene* scene);
 
-	  //void onApply();
-	  //void onOutputVolumeChanged();
-
 private:
   Q_DECLARE_PRIVATE(qSlicerReg2D3DModuleWidget);
   Q_DISABLE_COPY(qSlicerReg2D3DModuleWidget);
 
   vtkMRMLReg2D3DParametersNode *parametersNode;
-  Matrices* sourceTransform;
-  unsigned short volumeSize=330;   //Hardcoded, very messi
+  Matrices* sourceTransform;       // Transform Matrix of position of radiation source
+  unsigned short volumeSize=330;   // Hardcoded, very messi
 };
 
 #endif

@@ -46,6 +46,8 @@ set(MODULE_SRCS
   Matrices.h
   helloworld.cu
   helloworld.h
+  optimizer.h
+  optimzer.cpp
   )
 
 set(MODULE_MOC_SRCS

@@ -92,7 +92,6 @@ qSlicerReg2D3DModuleWidgetPrivate::~qSlicerReg2D3DModuleWidgetPrivate()
 //-----------------------------------------------------------------------------
 vtkSlicerReg2D3DLogic* qSlicerReg2D3DModuleWidgetPrivate::logic() const
 {
-    cerr < "in logic\n";
     Q_Q(const qSlicerReg2D3DModuleWidget);
   return vtkSlicerReg2D3DLogic::SafeDownCast(q->logic());
 }
