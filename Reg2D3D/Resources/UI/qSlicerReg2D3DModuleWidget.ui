@@ -519,6 +519,19 @@
        <string>Invert</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="btnOptimize">
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>180</y>
+        <width>80</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Optimize!</string>
+      </property>
+     </widget>
     </widget>
    </item>
    <item>

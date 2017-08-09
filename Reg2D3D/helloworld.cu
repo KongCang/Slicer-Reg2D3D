@@ -39,6 +39,7 @@ void cuda_hello(char *ac, int* bc, int n)
 	cudaMemcpy( ac, ad, csize, cudaMemcpyDeviceToHost ); 
 	cudaFree( ad );
 	cudaFree( bd );
+
 	
 	printf("C: %s\n", ac);
 

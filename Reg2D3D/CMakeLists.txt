@@ -44,10 +44,12 @@ set(MODULE_SRCS
   DrrRenderer.h
   Matrices.cxx
   Matrices.h
-  helloworld.cu
-  helloworld.h
-  optimizer.h
-  optimzer.cpp
+  #helloworld.cu
+  #helloworld.h
+  OptimPowell.h
+  QuaternionsCG.h
+  QuaternionsCG.cxx
+
   )
 
 set(MODULE_MOC_SRCS

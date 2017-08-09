@@ -59,6 +59,9 @@
 #include <vtkCallbackCommand.h>
 #include <vtkCommand.h>
 
+#include <gsl/gsl_vector.h>
+#include "QuaternionsCG.h"
+
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class qSlicerReg2D3DModuleWidgetPrivate: public Ui_qSlicerReg2D3DModuleWidget
@@ -170,6 +173,7 @@ void qSlicerReg2D3DModuleWidget::setup()
   connect(d->slTransZ,SIGNAL(valueChanged(double)),this,SLOT(onLinearTransformModified()) );
   connect(d->btnIdentity,SIGNAL(clicked(bool)),this,SLOT(onSetIdentity()) );
   connect(d->btnInvert,SIGNAL(clicked(bool)),this,SLOT(onInvert()) );
+  connect(d->btnOptimize,SIGNAL(clicked(bool)),this,SLOT(onOptimize()) );
 
 }
 
@@ -752,6 +756,13 @@ void qSlicerReg2D3DModuleWidget::onSetIdentity()
 void qSlicerReg2D3DModuleWidget::onInvert()
 {
     //not implemented
+    return;
+}
+
+void qSlicerReg2D3DModuleWidget::onOptimize()
+{
+    //not implemented
+    QuaternionsCG testClass;
     return;
 }
 

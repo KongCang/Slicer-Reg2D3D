@@ -79,6 +79,7 @@ protected slots:
       void onFocalWidthChanged();
       void onIntensityDividerChanged();
       void setDRRasOutputVolume(vtkMRMLScene* scene);
+      void onOptimize();
 
 private:
   Q_DECLARE_PRIVATE(qSlicerReg2D3DModuleWidget);
